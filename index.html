@@ -262,8 +262,9 @@
       <table class="data-table" id="currentStockTable">
         <thead>
           <tr>
-            <th>Name and Nationality</th>
-            <th>Class of Shares</th>
+            <th>Stockholder Name</th>
+            <th width="120">Nationality</th>
+            <th width="110">Class of Shares</th>
             <th>No. of Shares</th>
             <th>Amount Subscribed (Php)</th>
             <th>Amount Paid-up (Php)</th>
@@ -480,12 +481,34 @@ function fmtNum(n) {
   return (n || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-// --- Dynamic Row Handlers ---
-function addCurrentStockRow(name = '', shareClass = 'Common', shares = 1000, sub = 100000, paid = 100000) {
+// Helper: Deduplicate Signatories for Notarial Jurats / Acknowledgments
+function deduplicateSignatories(list) {
+  const map = new Map();
+  list.forEach(item => {
+    const key = (item.name || '').trim().toUpperCase();
+    if (!key) return;
+    const cleanId = (item.id || '').trim();
+
+    if (!map.has(key)) {
+      map.set(key, cleanId || 'Competent Evidence of Identity');
+    } else {
+      const currentId = map.get(key);
+      const isGeneric = !currentId || currentId === 'Competent Evidence of Identity' || currentId === 'Government Issued ID';
+      if (isGeneric && cleanId) {
+        map.set(key, cleanId);
+      }
+    }
+  });
+  return Array.from(map.entries()).map(([name, id]) => ({ name, id }));
+}
+
+// --- Dynamic Row Handlers: Present Stockholders ---
+function addCurrentStockRow(name = '', nat = 'Filipino', shareClass = 'Common', shares = 1000, sub = 100000, paid = 100000) {
   const tbody = document.querySelector('#currentStockTable tbody');
   const tr = document.createElement('tr');
   tr.innerHTML = `
-    <td><input type="text" class="cur-name" value="${name}" placeholder="e.g. JUAN DELA CRUZ / Filipino" required></td>
+    <td><input type="text" class="cur-name" value="${name}" placeholder="e.g. JUAN DELA CRUZ" required></td>
+    <td><input type="text" class="cur-nat" value="${nat}" placeholder="Filipino" required></td>
     <td><input type="text" class="cur-class" value="${shareClass}"></td>
     <td><input type="number" class="cur-shares" value="${shares}" oninput="recalcCurRow(this)" required></td>
     <td><input type="number" class="cur-sub" value="${sub}" step="0.01" required></td>
@@ -591,8 +614,9 @@ window.onload = function() {
   document.getElementById('shMeetingDate').value = '2026-10-15';
   document.getElementById('bodMeetingDate').value = '2026-10-15';
 
-  addCurrentStockRow('JUAN DELA CRUZ (Filipino)', 'Common', 5000, 500000, 500000);
-  addCurrentStockRow('MARIA SANTOS (Filipino)', 'Common', 5000, 500000, 500000);
+  // Populates Name and Nationality in distinct inputs
+  addCurrentStockRow('JUAN DELA CRUZ', 'Filipino', 'Common', 5000, 500000, 500000);
+  addCurrentStockRow('MARIA SANTOS', 'Filipino', 'Common', 5000, 500000, 500000);
 
   addBodRow('JUAN DELA CRUZ', '123-456-789-000', 'Passport P1234567B');
   addBodRow('MARIA SANTOS', '234-567-890-000', 'Driver\'s License N01-12-345678');
@@ -618,7 +642,7 @@ function toggleBox(el) {
 // --- JSON BACKUP & IMPORT FEATURE ---
 function exportJSON() {
   const data = {
-    version: '1.0',
+    version: '1.1',
     corpName: document.getElementById('corpName').value,
     formerCorpName: document.getElementById('formerCorpName').value,
     principalAddress: document.getElementById('principalAddress').value,
@@ -654,6 +678,7 @@ function exportJSON() {
   document.querySelectorAll('#currentStockTable tbody tr').forEach(tr => {
     data.currentStocks.push({
       name: tr.querySelector('.cur-name').value,
+      nat: tr.querySelector('.cur-nat').value,
       shareClass: tr.querySelector('.cur-class').value,
       shares: tr.querySelector('.cur-shares').value,
       sub: tr.querySelector('.cur-sub').value,
@@ -734,7 +759,7 @@ function importJSON(event) {
 
       document.querySelector('#currentStockTable tbody').innerHTML = '';
       if (Array.isArray(data.currentStocks)) {
-        data.currentStocks.forEach(s => addCurrentStockRow(s.name, s.shareClass, s.shares, s.sub, s.paid));
+        data.currentStocks.forEach(s => addCurrentStockRow(s.name, s.nat || 'Filipino', s.shareClass, s.shares, s.sub, s.paid));
       }
 
       document.querySelector('#bodTable tbody').innerHTML = '';
@@ -796,13 +821,14 @@ function generateDocuments() {
   const chairName = (document.getElementById('chairName').value || presName).toUpperCase();
   const meetingSecName = (document.getElementById('meetingSecName').value || secName).toUpperCase();
 
-  // Read Current Stockholders
+  // Read Current Stockholders (Item 3)
   const currentStocks = [];
   let curTotalShares = 0;
   let curTotalSub = 0;
   let curTotalPaid = 0;
   document.querySelectorAll('#currentStockTable tbody tr').forEach(tr => {
-    const cName = tr.querySelector('.cur-name').value;
+    const cName = tr.querySelector('.cur-name').value.trim().toUpperCase();
+    const cNat = tr.querySelector('.cur-nat').value.trim() || 'Filipino';
     const cClass = tr.querySelector('.cur-class').value;
     const cShares = parseFloat(tr.querySelector('.cur-shares').value) || 0;
     const cSub = parseFloat(tr.querySelector('.cur-sub').value) || 0;
@@ -810,7 +836,7 @@ function generateDocuments() {
     curTotalShares += cShares;
     curTotalSub += cSub;
     curTotalPaid += cPaid;
-    currentStocks.push({ name: cName, shareClass: cClass, shares: cShares, sub: cSub, paid: cPaid });
+    currentStocks.push({ name: cName, nat: cNat, shareClass: cClass, shares: cShares, sub: cSub, paid: cPaid });
   });
 
   const treasuryShares = parseFloat(document.getElementById('treasuryShares').value) || 0;
@@ -891,10 +917,10 @@ function generateDocuments() {
 
   let outputHtml = '';
 
-  // Render Item 3 Table Rows
+  // Render Item 3 Table Rows with Name and Nationality properly integrated
   let curStockRowsHtml = currentStocks.map(s => `
     <tr>
-      <td>${s.name}</td>
+      <td>${s.name} (${s.nat})</td>
       <td style="text-align:center;">${s.shareClass}</td>
       <td style="text-align:right;">${s.shares.toLocaleString()}</td>
       <td style="text-align:right;">${fmtNum(s.sub)}</td>
@@ -988,10 +1014,19 @@ function generateDocuments() {
     </tr>`;
   }
 
-  let idTableRowsHtml = directors.map(d => `
+  // --- Deduplicate Notary Jurat Affiants for Unified Certification ---
+  const rawUnifiedAffiants = [
+    ...directors.map(d => ({ name: d.name, id: d.id || (d.tin ? `TIN: ${d.tin}` : '') })),
+    { name: secName, id: secTIN ? `TIN: ${secTIN}` : '' },
+    { name: chairName, id: presTIN ? `TIN: ${presTIN}` : '' },
+    { name: meetingSecName, id: secTIN ? `TIN: ${secTIN}` : '' }
+  ];
+  const uniqueUnifiedAffiants = deduplicateSignatories(rawUnifiedAffiants);
+
+  let idTableRowsHtml = uniqueUnifiedAffiants.map(d => `
     <tr>
       <td>${d.name}</td>
-      <td>${d.id || 'Competent Evidence of Identity'}</td>
+      <td>${d.id}</td>
     </tr>
   `).join('');
 
@@ -1215,6 +1250,21 @@ function generateDocuments() {
   // ================= 3. SUBSCRIPTION CONTRACT (FOR CASH) =================
   if (cashSubscribers.length > 0) {
     cashSubscribers.forEach(sub => {
+      // Deduplicate acknowledgment parties for Subscription Contract
+      const rawSubAffiants = [
+        { name: sub.name, id: sub.id },
+        { name: presName, id: presTIN ? `TIN: ${presTIN}` : 'Government Issued ID' },
+        { name: treasName, id: treasTIN ? `TIN: ${treasTIN}` : 'Government Issued ID' }
+      ];
+      const uniqueSubAffiants = deduplicateSignatories(rawSubAffiants);
+
+      const subAffiantsHtml = uniqueSubAffiants.map(a => `
+        <tr>
+          <td>${a.name}</td>
+          <td>${a.id}</td>
+        </tr>
+      `).join('');
+
       outputHtml += `
       <!-- Subscription Contract: Terms Page -->
       <div class="doc-page">
@@ -1312,26 +1362,11 @@ function generateDocuments() {
             <thead>
               <tr>
                 <th>Name</th>
-                <th>TIN</th>
                 <th>Competent Evidence of Identity</th>
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td>${sub.name}</td>
-                <td>-</td>
-                <td>${sub.id || 'Evidence of Identity'}</td>
-              </tr>
-              <tr>
-                <td>${presName}</td>
-                <td>${presTIN}</td>
-                <td>Government Issued ID</td>
-              </tr>
-              <tr>
-                <td>${treasName}</td>
-                <td>${treasTIN}</td>
-                <td>Government Issued ID</td>
-              </tr>
+              ${subAffiantsHtml}
             </tbody>
           </table>
           <p style="text-indent:40px; text-align:justify;">
@@ -1354,6 +1389,20 @@ function generateDocuments() {
   // ================= 4. DEED OF ASSIGNMENT (CONVERSION OF LIABILITIES) =================
   if (convSubscribers.length > 0) {
     convSubscribers.forEach(sub => {
+      // Deduplicate acknowledgment parties for Deed of Assignment
+      const rawDeedAffiants = [
+        { name: sub.name, id: sub.id },
+        { name: presName, id: presTIN ? `TIN: ${presTIN}` : 'Government Issued ID' }
+      ];
+      const uniqueDeedAffiants = deduplicateSignatories(rawDeedAffiants);
+
+      const deedAffiantsHtml = uniqueDeedAffiants.map(a => `
+        <tr>
+          <td>${a.name}</td>
+          <td>${a.id}</td>
+        </tr>
+      `).join('');
+
       outputHtml += `
       <!-- Deed of Assignment: Terms Page -->
       <div class="doc-page">
@@ -1439,14 +1488,7 @@ function generateDocuments() {
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td>${sub.name}</td>
-                <td>${sub.id || 'Competent Evidence of Identity'}</td>
-              </tr>
-              <tr>
-                <td>${presName}</td>
-                <td>Government Issued ID</td>
-              </tr>
+              ${deedAffiantsHtml}
             </tbody>
           </table>
           <p style="text-indent:40px; text-align:justify;">
