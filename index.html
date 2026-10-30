@@ -115,12 +115,30 @@
       line-height: 1.35;
       color: #000;
     }
-    .doc-page h2, .doc-page h3, .doc-page h4 {
+    .doc-page h2, .doc-page h3 {
       text-align: center;
       color: #000;
       margin: 4px 0;
       text-transform: uppercase;
     }
+    
+    /* Specific Typography Requirements for Unified Form */
+    .unified-main-title {
+      font-size: 12pt !important;
+      text-align: center !important;
+      font-weight: bold;
+      text-transform: uppercase;
+      margin: 4px 0;
+    }
+    .unified-section-title {
+      font-size: 11pt !important;
+      text-align: left !important;
+      font-weight: bold;
+      margin-top: 14px;
+      margin-bottom: 4px;
+      text-transform: none !important;
+    }
+
     .doc-table {
       width: 100%;
       border-collapse: collapse;
@@ -614,7 +632,6 @@ window.onload = function() {
   document.getElementById('shMeetingDate').value = '2026-10-15';
   document.getElementById('bodMeetingDate').value = '2026-10-15';
 
-  // Populates Name and Nationality in distinct inputs
   addCurrentStockRow('JUAN DELA CRUZ', 'Filipino', 'Common', 5000, 500000, 500000);
   addCurrentStockRow('MARIA SANTOS', 'Filipino', 'Common', 5000, 500000, 500000);
 
@@ -642,7 +659,7 @@ function toggleBox(el) {
 // --- JSON BACKUP & IMPORT FEATURE ---
 function exportJSON() {
   const data = {
-    version: '1.1',
+    version: '1.2',
     corpName: document.getElementById('corpName').value,
     formerCorpName: document.getElementById('formerCorpName').value,
     principalAddress: document.getElementById('principalAddress').value,
@@ -903,7 +920,7 @@ function generateDocuments() {
   const cashSubscribers = subscribers.filter(s => s.mode === 'Cash');
   const convSubscribers = subscribers.filter(s => s.mode === 'Conversion');
 
-  // Determine Treasurer's Affidavit Consideration Clause for the TOTAL
+  // Determine Treasurer's Consideration Clause
   let finalTreasPaymentMode = selectedTreasMode;
   if (selectedTreasMode === 'auto') {
     if (cashSubscribers.length > 0 && convSubscribers.length > 0) {
@@ -917,7 +934,7 @@ function generateDocuments() {
 
   let outputHtml = '';
 
-  // Render Item 3 Table Rows with Name and Nationality properly integrated
+  // Render Item 3 Table Rows
   let curStockRowsHtml = currentStocks.map(s => `
     <tr>
       <td>${s.name} (${s.nat})</td>
@@ -1038,15 +1055,20 @@ function generateDocuments() {
       ${execCity} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;) S.S.
     </div>
 
-    <h2>UNIFIED CERTIFICATION FOR INCREASE IN AUTHORIZED CAPITAL STOCK OF</h2>
-    <h3>${corpName}</h3>
-    ${formerCorpName ? `<div style="text-align:center; font-style:italic; margin-bottom:6px;">[Formerly: ${formerCorpName}]</div>` : ''}
+    <!-- MAIN TITLE DECREASED TO SIZE 12 -->
+    <div class="unified-main-title">
+      UNIFIED CERTIFICATION FOR INCREASE IN AUTHORIZED CAPITAL STOCK OF<br>
+      ${corpName}
+    </div>
+    ${formerCorpName ? `<div style="text-align:center; font-style:italic; font-size:11pt; margin-bottom:8px;">[Formerly: ${formerCorpName}]</div>` : ''}
     <br>
     <p style="text-indent: 40px; text-align: justify;">
       We, the undersigned majority of the Board of Directors, the Corporate Secretary, the Chairperson, and the Secretary of the stockholders’ meeting of <b>${corpName}</b> (“Corporation”), a corporation duly organized and existing under the laws of the Republic of the Philippines, with principal office address at ${address}, do hereby certify:
     </p>
 
-    <h4>I. Approval and Details for the Increase of Authorized Capital Stock</h4>
+    <!-- SECTION I: LEFT ALIGNED, SIZE 11 -->
+    <div class="unified-section-title">I. Approval and Details for the Increase of Authorized Capital Stock</div>
+    
     <p style="text-indent: 40px; text-align: justify;">
       1. That at the special meeting of the stockholders of Corporation ${meetingFormat} on <b>${shMeetingDate}</b>, at which meeting there was a quorum, the stockholders representing at least two-thirds (2/3) of the outstanding capital stock in person or by proxy, approved the increase of the corporation’s authorized capital stock (ACS) 
       from <b>${formatPesos(oldAcs)}</b> divided into <b>${oldShares.toLocaleString()}</b> shares, with a par value of <b>${formatPesos(par)}</b> per share,
@@ -1122,7 +1144,9 @@ function generateDocuments() {
       </div>
     </div>
 
-    <h4>II. Approval and Details for the Amended Articles of Incorporation</h4>
+    <!-- SECTION II: LEFT ALIGNED, SIZE 11 -->
+    <div class="unified-section-title">II. Approval and Details for the Amended Articles of Incorporation</div>
+    
     <p style="text-indent: 40px; text-align: justify;">
       1. That the Amended Articles of Incorporation of the said corporation attached hereto is a true and correct copy of the Articles of Incorporation of said Corporation, as amended by stockholders representing at least 2/3 of the outstanding capital stock and by a majority of the Board of Directors on <b>${shMeetingDate}</b>; and
     </p>
@@ -1130,7 +1154,9 @@ function generateDocuments() {
       2. That the amended provisions refer to <b>${amendedArticle}</b>.
     </p>
 
-    <h4>III. No Intra-Corporate Dispute (with Undertaking)</h4>
+    <!-- SECTION III: LEFT ALIGNED, SIZE 11 -->
+    <div class="unified-section-title">III. No Intra-Corporate Dispute (with Undertaking)</div>
+    
     <p style="text-indent: 40px; text-align: justify;">
       To the best of our knowledge, as of the date of execution and notarization of this certificate, no action or proceeding has been filed or is pending before any Court involving an intra-corporate dispute and/or any claim by any person or group against the board of directors, individual director and/or major corporate officer/s of the Corporation as its duly elected and/or appointed director or officer or vice versa.
     </p>
@@ -1138,7 +1164,9 @@ function generateDocuments() {
       If any action or proceeding referred to in the previous paragraph is initiated after the date of this certificate's execution and notarization and before the release of the Certificate of Approval of increase in capital stock, we shall notify the Department or Office of the Commission where the application is submitted, by providing the softcopy and hardcopy of a duly notarized secretary’s certificate, within three (3) calendar days of receiving notice of filing or pendency of an intra-corporate dispute.
     </p>
 
-    <h4>IV. Waiver of Preemptive Rights</h4>
+    <!-- SECTION IV: LEFT ALIGNED, SIZE 11 -->
+    <div class="unified-section-title">IV. Waiver of Preemptive Rights</div>
+    
     <p style="text-indent: 40px; text-align: justify;">
       In connection with the aforesaid increase in authorized capital stock, all non-subscribing stockholders have waived their respective preemptive rights in relation to Section 38 of Republic Act. No. 11232, otherwise known as the Revised Corporation Code of the Philippines.
     </p>
@@ -1250,7 +1278,6 @@ function generateDocuments() {
   // ================= 3. SUBSCRIPTION CONTRACT (FOR CASH) =================
   if (cashSubscribers.length > 0) {
     cashSubscribers.forEach(sub => {
-      // Deduplicate acknowledgment parties for Subscription Contract
       const rawSubAffiants = [
         { name: sub.name, id: sub.id },
         { name: presName, id: presTIN ? `TIN: ${presTIN}` : 'Government Issued ID' },
@@ -1362,6 +1389,7 @@ function generateDocuments() {
             <thead>
               <tr>
                 <th>Name</th>
+                <th>TIN</th>
                 <th>Competent Evidence of Identity</th>
               </tr>
             </thead>
@@ -1389,7 +1417,6 @@ function generateDocuments() {
   // ================= 4. DEED OF ASSIGNMENT (CONVERSION OF LIABILITIES) =================
   if (convSubscribers.length > 0) {
     convSubscribers.forEach(sub => {
-      // Deduplicate acknowledgment parties for Deed of Assignment
       const rawDeedAffiants = [
         { name: sub.name, id: sub.id },
         { name: presName, id: presTIN ? `TIN: ${presTIN}` : 'Government Issued ID' }
@@ -1551,10 +1578,25 @@ function downloadWordDoc() {
           font-size: 11pt;
           line-height: 1.35;
         }
-        h2, h3, h4 {
+        h2, h3 {
           text-align: center;
           text-transform: uppercase;
           margin: 4pt 0;
+        }
+        .unified-main-title {
+          font-size: 12pt !important;
+          text-align: center !important;
+          font-weight: bold;
+          text-transform: uppercase;
+          margin: 4pt 0;
+        }
+        .unified-section-title {
+          font-size: 11pt !important;
+          text-align: left !important;
+          font-weight: bold;
+          margin-top: 10pt;
+          margin-bottom: 4pt;
+          text-transform: none !important;
         }
         table.doc-table {
           width: 100%;
