@@ -499,13 +499,23 @@ function fmtNum(n) {
   return (n || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-// Helper: Formats Competent Evidence of Identity string prioritizing TIN if provided
+// Helper: Formats Competent Evidence of Identity string, stripping out any placeholder words
 function formatCompetentEvidence(person) {
   const tin = (person.tin || '').trim();
-  const id = (person.id || '').trim();
+  let id = (person.id || '').trim();
+
+  // Strip out unwanted placeholder strings
+  if (
+    id.toLowerCase().includes('corporate secretary') ||
+    id.toLowerCase().includes('chairperson') ||
+    id.toLowerCase().includes('meeting secretary')
+  ) {
+    id = '';
+  }
+
   const isGeneric = !id || id === 'Competent Evidence of Identity' || id === 'Government Issued ID';
 
-  if (tin) {
+  if (tin && tin !== '-') {
     if (!isGeneric && !id.toUpperCase().includes(tin.toUpperCase())) {
       return `${id} / TIN: ${tin}`;
     }
@@ -531,7 +541,7 @@ function deduplicateSignatories(list) {
       });
     } else {
       const existing = map.get(key);
-      if (!existing.tin && cleanTin) {
+      if ((!existing.tin || existing.tin === '-') && cleanTin) {
         existing.tin = cleanTin;
       }
       const isGeneric = !existing.id || existing.id === 'Competent Evidence of Identity' || existing.id === 'Government Issued ID';
@@ -683,7 +693,7 @@ function toggleBox(el) {
 // --- JSON BACKUP & IMPORT FEATURE ---
 function exportJSON() {
   const data = {
-    version: '1.4',
+    version: '1.5',
     corpName: document.getElementById('corpName').value,
     formerCorpName: document.getElementById('formerCorpName').value,
     principalAddress: document.getElementById('principalAddress').value,
@@ -1058,12 +1068,18 @@ function generateDocuments() {
     </tr>`;
   }
 
-  // Deduplicate Notary Jurat Affiants for Unified Certification
+  // Lookup actual ID from directors if name matches
+  const findDirectorId = (officerName) => {
+    const found = directors.find(d => d.name && d.name.trim().toUpperCase() === officerName.trim().toUpperCase());
+    return found ? found.id : '';
+  };
+
+  // Deduplicate Notary Jurat Affiants for Unified Certification without placeholder phrases
   const rawUnifiedAffiants = [
     ...directors.map(d => ({ name: d.name, tin: d.tin, id: d.id })),
-    { name: secName, tin: secTIN, id: 'Corporate Secretary ID' },
-    { name: chairName, tin: presTIN, id: 'Chairperson ID' },
-    { name: meetingSecName, tin: secTIN, id: 'Meeting Secretary ID' }
+    { name: secName, tin: secTIN, id: findDirectorId(secName) },
+    { name: chairName, tin: presTIN, id: findDirectorId(chairName) },
+    { name: meetingSecName, tin: secTIN, id: findDirectorId(meetingSecName) }
   ];
   const uniqueUnifiedAffiants = deduplicateSignatories(rawUnifiedAffiants);
 
@@ -1305,17 +1321,17 @@ function generateDocuments() {
   // ================= 3. SUBSCRIPTION CONTRACT (FOR CASH) =================
   if (cashSubscribers.length > 0) {
     cashSubscribers.forEach(sub => {
-      const presDirector = directors.find(d => d.name === presName);
-      const treasDirector = directors.find(d => d.name === treasName);
+      const presDirectorId = findDirectorId(presName);
+      const treasDirectorId = findDirectorId(treasName);
 
       const rawSubAffiants = [
         { name: sub.name, tin: sub.tin, id: sub.id },
-        { name: presName, tin: presTIN, id: presDirector?.id || 'Government Issued ID' },
-        { name: treasName, tin: treasTIN, id: treasDirector?.id || 'Government Issued ID' }
+        { name: presName, tin: presTIN, id: presDirectorId },
+        { name: treasName, tin: treasTIN, id: treasDirectorId }
       ];
       const uniqueSubAffiants = deduplicateSignatories(rawSubAffiants);
 
-      // 2-COLUMN TABLE WITH TIN AUTOMATICALLY PLACED IN COMPETENT EVIDENCE
+      // Clean 2-column table: Name | Competent Evidence of Identity (incorporating TIN)
       const subAffiantsHtml = uniqueSubAffiants.map(a => `
         <tr>
           <td>${a.name}</td>
@@ -1420,7 +1436,7 @@ function generateDocuments() {
             BEFORE ME, a Notary Public in and for ${execCity}, Philippines, this _____ day of _______________ ${execYear}, personally appeared:
           </p>
           
-          <!-- 2-COLUMN TABLE FOR COMPETENT EVIDENCE (TIN INCLUDED IN EVIDENCE COLUMN) -->
+          <!-- 2-COLUMN TABLE: NAME & COMPETENT EVIDENCE OF IDENTITY -->
           <table class="doc-table" style="width:85%; margin:15px auto;">
             <thead>
               <tr>
@@ -1453,11 +1469,11 @@ function generateDocuments() {
   // ================= 4. DEED OF ASSIGNMENT (CONVERSION OF LIABILITIES) =================
   if (convSubscribers.length > 0) {
     convSubscribers.forEach(sub => {
-      const presDirector = directors.find(d => d.name === presName);
+      const presDirectorId = findDirectorId(presName);
 
       const rawDeedAffiants = [
         { name: sub.name, tin: sub.tin, id: sub.id },
-        { name: presName, tin: presTIN, id: presDirector?.id || 'Government Issued ID' }
+        { name: presName, tin: presTIN, id: presDirectorId }
       ];
       const uniqueDeedAffiants = deduplicateSignatories(rawDeedAffiants);
 
