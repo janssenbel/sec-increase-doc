@@ -303,12 +303,12 @@
         </div>
         <div>
           <label>City / Venue of Execution (optional)</label>
-          <!-- NOT REQUIRED: Leaves space when empty -->
           <input type="text" id="execCity" placeholder="Leave blank to leave a space">
         </div>
         <div>
-          <label>Date of Execution</label>
-          <input type="date" id="execDate" required>
+          <label>Date of Execution (optional)</label>
+          <!-- NOT REQUIRED: Leaves space when empty -->
+          <input type="date" id="execDate">
         </div>
       </div>
     </div>
@@ -760,7 +760,7 @@ function toggleBox(el) {
 // --- JSON BACKUP & IMPORT FEATURE ---
 function exportJSON() {
   const data = {
-    version: '1.9',
+    version: '2.0',
     corpName: document.getElementById('corpName').value,
     formerCorpName: document.getElementById('formerCorpName').value,
     principalAddress: document.getElementById('principalAddress').value,
@@ -914,15 +914,30 @@ function generateDocuments() {
   const cityInline = hasCity ? rawCity : '________________________';
   const cityInlineUpper = hasCity ? rawCity.toUpperCase() : '________________________';
 
-  // Specific venue block lines matching SEC templates
   const unifiedVenueCity = hasCity ? `${rawCity} ) S.S.` : `&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_) S.S.`;
   const subVenueCity = hasCity ? `City of ${rawCity} ) S.S.` : `City of ____________________ ) S.S.`;
   const deedVenueCity = hasCity ? `${cityInlineUpper} ] S.S.` : `_________________________ ] S.S.`;
 
-  const execDate = new Date(document.getElementById('execDate').value);
-  const execDay = execDate.getDate();
-  const execMonthYear = execDate.toLocaleString('default', { month: 'long', year: 'numeric' });
-  const execYear = execDate.getFullYear();
+  // READ DATE OF EXECUTION: When empty, provide clean legal spaces/underlines
+  const execDateInput = document.getElementById('execDate').value;
+  const hasExecDate = !!execDateInput && !isNaN(new Date(execDateInput).getTime());
+
+  let execDay = '______';
+  let execMonth = '_________________';
+  let execMonthYear = '_________________';
+  let execYear = '20_____';
+  let execYearDocket = '________';
+  let execDeedOpeningDate = '_____________';
+
+  if (hasExecDate) {
+    const d = new Date(execDateInput);
+    execDay = d.getDate();
+    execMonth = d.toLocaleString('default', { month: 'long' });
+    execMonthYear = d.toLocaleString('default', { month: 'long', year: 'numeric' });
+    execYear = d.getFullYear();
+    execYearDocket = d.getFullYear();
+    execDeedOpeningDate = `${execDay} day of ${execMonthYear}`;
+  }
 
   const par = parseFloat(document.getElementById('parValue').value) || 0;
   const oldShares = parseFloat(document.getElementById('oldShares').value) || 0;
@@ -1245,7 +1260,7 @@ function generateDocuments() {
       5. That no bonded indebtedness has been incurred, created, or increased as of the date of the meeting; and
     </p>
     
-    <!-- ITEM 6 KEPT TOGETHER SO CHECKBOXES ARE NOT SPLIT OVER PAGE BREAKS -->
+    <!-- ITEM 6 KEPT TOGETHER -->
     <div class="keep-together" style="margin-top: 4px;">
       <p style="text-align: justify; margin-bottom: 4px;">
         6. That the requirements of:
@@ -1300,7 +1315,7 @@ function generateDocuments() {
   <!-- ================= UNIFIED CERTIFICATION: DEDICATED SIGNATURE & JURAT PAGE ================= -->
   <div class="doc-page">
     <p style="text-indent: 40px; margin-top: 15px;">
-      IN WITNESS WHEREOF, we have hereunto signed this certificate this ${execDay} day of ${execMonthYear} at ${cityInline}, Philippines.
+      IN WITNESS WHEREOF, we have hereunto signed this certificate this ${hasExecDate ? execDay + ' day of ' + execMonthYear : '______ day of _________________'} at ${cityInline}, Philippines.
     </p>
 
     <table style="width:100%; border:none; margin-top:15px;">
@@ -1332,7 +1347,7 @@ function generateDocuments() {
     <br><br>
     <div style="border-top: 1px dashed #666; padding-top: 15px;">
       <p style="text-indent: 40px; text-align: justify;">
-        SUBSCRIBED AND SWORN to before me this _____ day of _______________ ${execYear} in ${cityInline}, affiants exhibited to me their Competent Evidence of Identity:
+        SUBSCRIBED AND SWORN to before me this ${hasExecDate ? execDay + ' day of ' + execMonth : '_____ day of _______________'} ${execYear} in ${cityInline}, affiants exhibited to me their Competent Evidence of Identity:
       </p>
       
       <!-- COMPACT EVIDENCE OF IDENTITY TABLE (WIDTH 60%, 8.5PT) -->
@@ -1354,7 +1369,7 @@ function generateDocuments() {
         Doc. No. &nbsp;______;<br>
         Page No. ______;<br>
         Book No. ______;<br>
-        Series of ${execYear}.
+        Series of ${execYearDocket}.
       </div>
     </div>
   </div>`;
@@ -1390,7 +1405,7 @@ function generateDocuments() {
 
     <br><br><br>
     <p>
-      SUBSCRIBED AND SWORN to before me this _____ day of ________________ ${execYear}, affiant exhibiting to me her/his Competent Evidence of Identity / TIN: ${treasTIN}.
+      SUBSCRIBED AND SWORN to before me this ${hasExecDate ? execDay + ' day of ' + execMonth : '___ day of _____________'}, affiant exhibiting to me her/his Competent Evidence of Identity / TIN: ${treasTIN}.
     </p>
     
     <!-- NOTARY PUBLIC RIGHT-ALIGNED, DOCKET LEFT-ALIGNED -->
@@ -1399,7 +1414,7 @@ function generateDocuments() {
       Doc. No. &nbsp;______;<br>
       Page No. ______;<br>
       Book No. ______;<br>
-      Series of ${execYear}.
+      Series of ${execYearDocket}.
     </div>
   </div>`;
 
@@ -1431,7 +1446,7 @@ function generateDocuments() {
         <br>
         <p><b>KNOW ALL PERSONS BY THESE PRESENTS:</b></p>
         <p style="text-indent: 40px; text-align: justify;">
-          This subscription contract is made and entered this ${execDay} day of ${execMonthYear}, ${cityInline}, Philippines, by and between:
+          This subscription contract is made and entered this ${hasExecDate ? execDay + ' day of ' + execMonthYear : '______ day of _________________ 20_____'}, ${cityInline}, Philippines, by and between:
         </p>
         <p style="text-indent: 40px; text-align: justify;">
           <b>${corpName}</b>, a corporation organized and existing under the laws of the Philippines, with principal office address at ${address}, duly represented by its President, <b>${presName}</b>, of legal age, Filipino, and Treasurer, <b>${treasName}</b>, of legal age, Filipino (referred to here as, “the Corporation”);
@@ -1484,7 +1499,7 @@ function generateDocuments() {
       <!-- Subscription Contract: SEPARATED SIGNATURE & ACKNOWLEDGMENT PAGE -->
       <div class="doc-page">
         <p style="text-indent: 40px; margin-top: 15px;">
-          IN WITNESS WHEREOF, we have hereunto set our hands this ${execDay} day of ${execMonthYear} at ${cityInline}.
+          IN WITNESS WHEREOF, we have hereunto set our hands this ${hasExecDate ? execDay + ' day of ' + execMonthYear : '_________ day of _________________, 20_____'} at ${cityInline}.
         </p>
         <br><br>
         <table style="width:100%; border:none;">
@@ -1518,7 +1533,7 @@ function generateDocuments() {
           </div>
 
           <p style="text-indent:40px; text-align:justify;">
-            BEFORE ME, a Notary Public in and for ${hasCity ? cityInline : '____________________'}, Philippines, this _____ day of _______________ ${execYear}, personally appeared:
+            BEFORE ME, a Notary Public in and for ${hasCity ? cityInline : '____________________'}, Philippines, this ${hasExecDate ? execDay + ' day of ' + execMonth : '__________________ day of ________________'}, ${hasExecDate ? execYear : '20_____'}, personally appeared:
           </p>
           
           <!-- COMPACT EVIDENCE OF IDENTITY TABLE (WIDTH 60%, 8.5PT) -->
@@ -1544,7 +1559,7 @@ function generateDocuments() {
             Doc. No. &nbsp;______;<br>
             Page No. ______;<br>
             Book No. ______;<br>
-            Series of ${execYear}.
+            Series of ${execYearDocket}.
           </div>
         </div>
       </div>`;
@@ -1577,7 +1592,7 @@ function generateDocuments() {
         <br>
         <p><b>KNOW ALL MEN BY THESE PRESENTS:</b></p>
         <p style="text-indent: 40px; text-align: justify;">
-          This Deed of Assignment made and executed on ${execDay} day of ${execMonthYear}, by and between:
+          This Deed of Assignment made and executed on ${execDeedOpeningDate}, by and between:
         </p>
         <p style="text-indent: 40px; text-align: justify;">
           <b>${sub.name}</b>, of legal age, ${sub.nat}, single and with postal address at ${sub.addr}, hereinafter referred to as the “<b>ASSIGNOR</b>”;
@@ -1607,7 +1622,7 @@ function generateDocuments() {
       <!-- Deed of Assignment: SEPARATED SIGNATURE & ACKNOWLEDGMENT PAGE -->
       <div class="doc-page">
         <p style="text-indent: 40px; margin-top: 15px;">
-          IN WITNESS WHEREOF, the parties have caused this Deed to be signed in their respective names this ${execDay} day of ${execMonthYear} at ${cityInline}.
+          IN WITNESS WHEREOF, the parties have caused this Deed to be signed in their respective names this ${hasExecDate ? execDay + ' day of ' + execMonthYear : '________________'} at ${cityInline}.
         </p>
         <br><br>
         <table style="width:100%; border:none;">
@@ -1645,7 +1660,7 @@ function generateDocuments() {
           </div>
 
           <p style="text-indent:40px; text-align:justify;">
-            BEFORE ME, a Notary Public for and in the above-named jurisdiction on this _____ day of _______________ ${execYear}, personally appeared the following:
+            BEFORE ME, a Notary Public for and in the above-named jurisdiction on this ${hasExecDate ? execDay + ' day of ' + execMonth : '_____ day of _______________'} ${hasExecDate ? execYear : '20____'}, personally appeared the following:
           </p>
           
           <!-- COMPACT EVIDENCE OF IDENTITY TABLE (WIDTH 60%, 8.5PT) -->
@@ -1670,7 +1685,7 @@ function generateDocuments() {
             Doc. No. &nbsp;______;<br>
             Page No. ______;<br>
             Book No. ______;<br>
-            Series of ${execYear}.
+            Series of ${execYearDocket}.
           </div>
         </div>
       </div>`;
