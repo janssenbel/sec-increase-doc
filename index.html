@@ -422,7 +422,7 @@
         <thead>
           <tr>
             <th>Subscriber Name</th>
-            <th width="110">TIN</th>
+            <th width="120">TIN</th>
             <th width="100">Nationality</th>
             <th>Residential Address</th>
             <th>Shares Subscribed</th>
@@ -499,7 +499,22 @@ function fmtNum(n) {
   return (n || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-// Helper: Deduplicate Signatories for Notarial Jurats / Acknowledgments (carrying name, tin, and id)
+// Helper: Formats Competent Evidence of Identity string prioritizing TIN if provided
+function formatCompetentEvidence(person) {
+  const tin = (person.tin || '').trim();
+  const id = (person.id || '').trim();
+  const isGeneric = !id || id === 'Competent Evidence of Identity' || id === 'Government Issued ID';
+
+  if (tin) {
+    if (!isGeneric && !id.toUpperCase().includes(tin.toUpperCase())) {
+      return `${id} / TIN: ${tin}`;
+    }
+    return id.toUpperCase().startsWith('TIN') ? id : `TIN: ${tin}`;
+  }
+  return id || 'Competent Evidence of Identity';
+}
+
+// Helper: Deduplicate Signatories for Notarial Jurats / Acknowledgments
 function deduplicateSignatories(list) {
   const map = new Map();
   list.forEach(item => {
@@ -511,12 +526,12 @@ function deduplicateSignatories(list) {
     if (!map.has(key)) {
       map.set(key, {
         name: key,
-        tin: cleanTin || '-',
-        id: cleanId || 'Competent Evidence of Identity'
+        tin: cleanTin,
+        id: cleanId
       });
     } else {
       const existing = map.get(key);
-      if ((!existing.tin || existing.tin === '-') && cleanTin) {
+      if (!existing.tin && cleanTin) {
         existing.tin = cleanTin;
       }
       const isGeneric = !existing.id || existing.id === 'Competent Evidence of Identity' || existing.id === 'Government Issued ID';
@@ -668,7 +683,7 @@ function toggleBox(el) {
 // --- JSON BACKUP & IMPORT FEATURE ---
 function exportJSON() {
   const data = {
-    version: '1.3',
+    version: '1.4',
     corpName: document.getElementById('corpName').value,
     formerCorpName: document.getElementById('formerCorpName').value,
     principalAddress: document.getElementById('principalAddress').value,
@@ -1043,7 +1058,7 @@ function generateDocuments() {
     </tr>`;
   }
 
-  // --- Deduplicate Notary Jurat Affiants for Unified Certification ---
+  // Deduplicate Notary Jurat Affiants for Unified Certification
   const rawUnifiedAffiants = [
     ...directors.map(d => ({ name: d.name, tin: d.tin, id: d.id })),
     { name: secName, tin: secTIN, id: 'Corporate Secretary ID' },
@@ -1055,7 +1070,7 @@ function generateDocuments() {
   let idTableRowsHtml = uniqueUnifiedAffiants.map(d => `
     <tr>
       <td>${d.name}</td>
-      <td>${d.id || (d.tin ? 'TIN: ' + d.tin : 'Competent Evidence of Identity')}</td>
+      <td>${formatCompetentEvidence(d)}</td>
     </tr>
   `).join('');
 
@@ -1290,7 +1305,6 @@ function generateDocuments() {
   // ================= 3. SUBSCRIPTION CONTRACT (FOR CASH) =================
   if (cashSubscribers.length > 0) {
     cashSubscribers.forEach(sub => {
-      // Find IDs if available from Directors list
       const presDirector = directors.find(d => d.name === presName);
       const treasDirector = directors.find(d => d.name === treasName);
 
@@ -1301,12 +1315,11 @@ function generateDocuments() {
       ];
       const uniqueSubAffiants = deduplicateSignatories(rawSubAffiants);
 
-      // FIXED: Exactly 3 td cells corresponding to 3 th cells (Name | TIN | Competent Evidence)
+      // 2-COLUMN TABLE WITH TIN AUTOMATICALLY PLACED IN COMPETENT EVIDENCE
       const subAffiantsHtml = uniqueSubAffiants.map(a => `
         <tr>
           <td>${a.name}</td>
-          <td style="text-align:center;">${a.tin && a.tin !== '-' ? a.tin : '-'}</td>
-          <td>${a.id || 'Competent Evidence of Identity'}</td>
+          <td>${formatCompetentEvidence(a)}</td>
         </tr>
       `).join('');
 
@@ -1407,13 +1420,12 @@ function generateDocuments() {
             BEFORE ME, a Notary Public in and for ${execCity}, Philippines, this _____ day of _______________ ${execYear}, personally appeared:
           </p>
           
-          <!-- FIXED 3-COLUMN TABLE FOR COMPETENT EVIDENCE IN SUBSCRIPTION CONTRACT -->
-          <table class="doc-table" style="width:90%; margin:15px auto;">
+          <!-- 2-COLUMN TABLE FOR COMPETENT EVIDENCE (TIN INCLUDED IN EVIDENCE COLUMN) -->
+          <table class="doc-table" style="width:85%; margin:15px auto;">
             <thead>
               <tr>
-                <th style="width:38%;">Name</th>
-                <th style="width:26%;">TIN</th>
-                <th style="width:36%;">Competent Evidence of Identity</th>
+                <th style="width:50%;">Name</th>
+                <th style="width:50%;">Competent Evidence of Identity</th>
               </tr>
             </thead>
             <tbody>
@@ -1452,7 +1464,7 @@ function generateDocuments() {
       const deedAffiantsHtml = uniqueDeedAffiants.map(a => `
         <tr>
           <td>${a.name}</td>
-          <td>${a.id || (a.tin && a.tin !== '-' ? 'TIN: ' + a.tin : 'Competent Evidence of Identity')}</td>
+          <td>${formatCompetentEvidence(a)}</td>
         </tr>
       `).join('');
 
