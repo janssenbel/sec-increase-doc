@@ -441,9 +441,9 @@
           <input type="text" id="treasTIN" placeholder="234-567-890-000">
         </div>
         <div class="grid-full">
-          <label style="color:var(--primary);">Treasurer's Affidavit Consideration Clause (appended after subscription total):</label>
+          <label style="color:var(--primary);">Treasurer's Consideration Option:</label>
           <select id="treasPaymentMode">
-            <option value="auto">Auto-detect based on subscribers (Recommended)</option>
+            <option value="auto">Auto-detect based on subscribers (Recommended: Spells out both when dual)</option>
             <option value="in cash">in cash</option>
             <option value="via conversion of liabilities to equity">via conversion of liabilities to equity</option>
             <option value="in cash and via conversion of liabilities to equity">in cash and via conversion of liabilities to equity</option>
@@ -814,7 +814,7 @@ window.onload = function() {
   addBodRow('MARIA SANTOS', '234-567-890-000', 'Driver\'s License N01-12-345678');
   addBodRow('PEDRO PENDUKO', '345-678-901-000', 'UMID 0011-2233445-6');
 
-  // Sample row 1: Dual Cash and Conversion (as shown in image)
+  // Sample row 1: Dual Cash and Conversion
   addSubscriberRow('JUAN DELA CRUZ', '123-456-789-000', 'Filipino', '123 Pine St., Makati City', 10000, 100, 500000, 500000, 'Passport P1234567B');
   // Sample row 2: Pure Cash
   addSubscriberRow('MARIA SANTOS', '234-567-890-000', 'Filipino', '456 Oak St., Taguig City', 5000, 100, 500000, 0, 'Driver\'s License N01-12-345678');
@@ -836,7 +836,7 @@ function toggleBox(el) {
 // --- JSON BACKUP & IMPORT FEATURE ---
 function exportJSON() {
   const data = {
-    version: '2.3',
+    version: '2.4',
     corpName: document.getElementById('corpName').value,
     formerCorpName: document.getElementById('formerCorpName').value,
     principalAddress: document.getElementById('principalAddress').value,
@@ -1144,16 +1144,18 @@ function generateDocuments() {
     });
   });
 
-  // Determine Treasurer's Consideration Clause
-  let finalTreasPaymentMode = selectedTreasMode;
-  if (selectedTreasMode === 'auto') {
-    if (cashGrandTotal > 0 && convGrandTotal > 0) {
-      finalTreasPaymentMode = `partly in cash (Php ${fmtNum(cashGrandTotal)}) and partly via conversion of liabilities to equity (Php ${fmtNum(convGrandTotal)})`;
-    } else if (convGrandTotal > 0) {
-      finalTreasPaymentMode = 'via conversion of liabilities to equity';
-    } else {
-      finalTreasPaymentMode = 'in cash';
-    }
+  // ================= TREASURER'S AFFIDAVIT CONSIDERATION PHRASING =================
+  // If two modes of payment:
+  // "that of said subscription, [Amount in Words of cash] ([amount in figures]) in cash and [Amount in words of conversion] ([amount in figures]) via conversion of liabilities to equity"
+  let treasSubscriptionClause = '';
+  const isDualPayment = (cashGrandTotal > 0 && convGrandTotal > 0) || selectedTreasMode === 'in cash and via conversion of liabilities to equity';
+
+  if (isDualPayment) {
+    treasSubscriptionClause = `and that of said subscription, <b>${formatPesos(cashGrandTotal)}</b> in cash and <b>${formatPesos(convGrandTotal)}</b> via conversion of liabilities to equity,`;
+  } else if (convGrandTotal > 0 || selectedTreasMode === 'via conversion of liabilities to equity') {
+    treasSubscriptionClause = `and that of said subscription <b>${formatPesos(convGrandTotal || totalPaid)}</b> via conversion of liabilities to equity,`;
+  } else {
+    treasSubscriptionClause = `and that of said subscription <b>${formatPesos(cashGrandTotal || totalPaid)}</b> in cash,`;
   }
 
   let outputHtml = '';
@@ -1186,7 +1188,7 @@ function generateDocuments() {
   let subRowsHtml = '';
 
   if (hasNonCash) {
-    // TWO-TIER HEADER WITH "Via Cash" AND "Via Conversion" AS REQUESTED
+    // TWO-TIER HEADER WITH "Via Cash" AND "Via Conversion" EXACTLY AS IN THE IMAGE
     subTableHead = `
       <tr>
         <th rowspan="2" style="width:4%;">#</th>
@@ -1493,7 +1495,7 @@ function generateDocuments() {
       That I was elected Treasurer by the stockholders of <b>${corpName}</b>, to act as such until my successor has been duly elected and qualified in accordance with by-laws of the corporation, and that as such treasurer, I have been authorized to receive for the corporation all subscriptions paid in by the subscribers for capital stock;
     </p>
     <p style="text-indent: 40px; text-align: justify;">
-      that out of <b>${formatPesos(increase)}</b> representing the increase in the authorized capital stock, <b>${formatPesos(totalSubscribed)}</b> has been actually subscribed and that of said subscription <b>${formatPesos(totalPaid)}</b> <u>${finalTreasPaymentMode}</u>, has been actually paid to for the benefit and to the credit of the corporation and that at least twenty-five per centum (25%) of the increase in authorized capital has been subscribed and that at least twenty-five per centum (25%) of such subscription has been actually paid to me for the benefit and to the credit of the corporation and that said payment represents fresh and additional paid in capital of the corporation.
+      that out of <b>${formatPesos(increase)}</b> representing the increase in the authorized capital stock, <b>${formatPesos(totalSubscribed)}</b> has been actually subscribed ${treasSubscriptionClause} has been actually paid to for the benefit and to the credit of the corporation and that at least twenty-five per centum (25%) of the increase in authorized capital has been subscribed and that at least twenty-five per centum (25%) of such subscription has been actually paid to me for the benefit and to the credit of the corporation and that said payment represents fresh and additional paid in capital of the corporation.
     </p>
 
     <br><br><br>
@@ -1712,7 +1714,7 @@ function generateDocuments() {
           WHEREAS, the ASSIGNOR desires to convert the Deposits into <b>${convShares.toLocaleString()}</b> common shares of the Assignee with a subscription price of <b>${formatPesos(sub.price)}</b> per share;
         </p>
         <p style="text-indent: 40px; text-align: justify;">
-          WHEREAS, the Board of Directors and Stockholders of the Assignee have authorized the Assignee to accept the subscription by the Assignor to the said <b>${convShares.toLocaleString()}</b> common shares at subscription price of <b>${formatPesos(sub.price)}</b> per share or a total value of <b>${formatPesos(sub.convPaid)}</b> fully payable by way of conversion into equity of the Deposits in the amount of <b>${formatPesos(sub.convPaid)}</b>;
+          WHEREAS, the Board of Directors and Stockholders of the Assignee have authorized the Assignee to accept the subscription by the Assignor to the said <b>${sub.shares.toLocaleString()}</b> common shares at subscription price of <b>${formatPesos(sub.price)}</b> per share or a total value of <b>${formatPesos(sub.convPaid)}</b> fully payable by way of conversion into equity of the Deposits in the amount of <b>${formatPesos(sub.convPaid)}</b>;
         </p>
         <p style="text-indent: 40px; text-align: justify;">
           NOW THEREFORE, the parties have agreed and do hereby agree that for and in consideration of the foregoing premises, Assignor hereby irrevocably assigns, transfers, and conveys in favor of the Assignee, its successors and assigns the Deposit amounting to <b>${formatPesos(sub.convPaid)}</b> as full payment for his/her subscription to <b>${convShares.toLocaleString()}</b> common shares at a subscription price of <b>${formatPesos(sub.price)}</b> per share or a total value of <b>${formatPesos(sub.amount)}</b>.
