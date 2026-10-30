@@ -1,0 +1,1556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SEC Capital Increase Document Generator</title>
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --primary-hover: #172554;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --border: #cbd5e1;
+      --text: #0f172a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Screen Form UI */
+    .app-container {
+      max-width: 1100px;
+      margin: 20px auto;
+      padding: 0 16px;
+    }
+    .card {
+      background: var(--card);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .header-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    h1, h2, h3 { margin-top: 0; color: var(--primary); }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+    .grid-full { grid-column: 1 / -1; }
+    label { font-size: 0.85rem; font-weight: 600; display: block; margin-bottom: 4px; }
+    input, select, textarea {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.95rem;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: 2px solid var(--primary);
+    }
+    .btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .btn:hover { background: var(--primary-hover); }
+    .btn-secondary { background: #64748b; }
+    .btn-secondary:hover { background: #475569; }
+    .btn-success { background: #15803d; }
+    .btn-success:hover { background: #166534; }
+    .btn-danger { background: #ef4444; padding: 4px 8px; font-size: 0.8rem; }
+    .btn-outline {
+      background: white;
+      color: var(--primary);
+      border: 1.5px solid var(--primary);
+    }
+    .btn-outline:hover {
+      background: #eff6ff;
+    }
+    table.data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+    }
+    table.data-table th, table.data-table td {
+      border: 1px solid var(--border);
+      padding: 8px;
+      text-align: left;
+      font-size: 0.85rem;
+    }
+    table.data-table th { background: #f1f5f9; }
+    .alert {
+      padding: 12px;
+      border-radius: 6px;
+      margin-top: 12px;
+      font-size: 0.9rem;
+    }
+    .alert-info { background: #e0f2fe; color: #0369a1; }
+
+    /* Generated Legal Documents Container (A4 Preview) */
+    #doc-preview { display: none; }
+    .doc-page {
+      background: white;
+      width: 210mm; /* A4 size */
+      min-height: 297mm;
+      padding: 25.4mm; /* 1 inch margin */
+      margin: 20px auto;
+      box-shadow: 0 0 10px rgba(0,0,0,0.15);
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 10.5pt;
+      line-height: 1.35;
+      color: #000;
+    }
+    .doc-page h2, .doc-page h3, .doc-page h4 {
+      text-align: center;
+      color: #000;
+      margin: 4px 0;
+      text-transform: uppercase;
+    }
+    .doc-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0;
+      font-size: 9.5pt;
+    }
+    .doc-table th, .doc-table td {
+      border: 1px solid black;
+      padding: 4px 6px;
+      text-align: left;
+    }
+    .doc-table th { text-align: center; font-weight: bold; }
+    
+    .venue-block {
+      text-align: left !important;
+      font-weight: normal;
+      line-height: 1.25;
+      margin-bottom: 18px;
+      font-family: 'Times New Roman', Times, serif;
+    }
+
+    /* Notary Public Right-Aligned & Docket Info Left-Aligned */
+    .notary-title {
+      text-align: right !important;
+      font-family: 'Times New Roman', Times, serif;
+      margin-top: 25px;
+      margin-bottom: 25px;
+    }
+    .notary-docket {
+      text-align: left !important;
+      line-height: 1.45;
+      font-family: 'Times New Roman', Times, serif;
+    }
+
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 4px 0;
+      cursor: pointer;
+    }
+    .box-mark {
+      font-family: 'Segoe UI Symbol', 'DejaVu Sans', Arial, sans-serif;
+      font-size: 13pt;
+      user-select: none;
+    }
+
+    /* Print Formatting */
+    @media print {
+      @page {
+        size: A4 portrait;
+        margin: 20mm;
+      }
+      body { background: white; margin: 0; padding: 0; }
+      .no-print { display: none !important; }
+      #doc-preview { display: block !important; }
+      .doc-page {
+        box-shadow: none;
+        margin: 0;
+        width: 100%;
+        min-height: auto;
+        padding: 0;
+        page-break-after: always !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-container no-print">
+  <div class="card header-actions">
+    <div>
+      <h1>SEC Capital Increase Document Generator</h1>
+      <p style="margin:0;">Unified Certification, Treasurer’s Affidavit, Cash Subscription Contracts, and Debt Conversion Deeds.</p>
+    </div>
+    <div style="display:flex; gap:10px;">
+      <button type="button" class="btn btn-outline" onclick="exportJSON()">💾 Backup to JSON</button>
+      <button type="button" class="btn btn-outline" onclick="document.getElementById('jsonFileInput').click()">📂 Import JSON</button>
+      <input type="file" id="jsonFileInput" accept=".json" style="display:none;" onchange="importJSON(event)">
+    </div>
+  </div>
+
+  <form id="secForm">
+    <!-- 1. Corporate Details -->
+    <div class="card">
+      <h2>1. Corporate Details</h2>
+      <div class="grid">
+        <div class="grid-full">
+          <label>Present Corporate Name</label>
+          <input type="text" id="corpName" required placeholder="ABC HOLDINGS INC.">
+        </div>
+        <div class="grid-full">
+          <label>Former Corporate Name (leave blank if none)</label>
+          <input type="text" id="formerCorpName" placeholder="Leave blank if no prior name change">
+        </div>
+        <div class="grid-full">
+          <label>Principal Office Address</label>
+          <input type="text" id="principalAddress" required placeholder="Unit 1001, Ayala Ave., Makati City">
+        </div>
+        <div>
+          <label>City / Venue of Execution</label>
+          <input type="text" id="execCity" required placeholder="Makati City">
+        </div>
+        <div>
+          <label>Date of Execution</label>
+          <input type="date" id="execDate" required>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Capital Stock Structure -->
+    <div class="card">
+      <h2>2. Capital Stock Details</h2>
+      <div class="grid">
+        <div>
+          <label>Par Value per Share (Php)</label>
+          <input type="number" id="parValue" value="100.00" step="0.01" required>
+        </div>
+        <div>
+          <label>Previous Authorized Shares</label>
+          <input type="number" id="oldShares" placeholder="10000" required>
+        </div>
+        <div>
+          <label>New Authorized Shares</label>
+          <input type="number" id="newShares" placeholder="50000" required>
+        </div>
+      </div>
+      <div id="capitalStats" class="alert alert-info">
+        Fill in the share amounts to calculate increase metrics.
+      </div>
+    </div>
+
+    <!-- 3. Current Capital Stock (Item 3 Table) -->
+    <div class="card">
+      <h2>3. Present Capital Stock (Current Shareholdings)</h2>
+      <p style="font-size:0.85rem; color:#64748b;">
+        Details of the capital stock as of the stockholders' meeting approving the increase (Section I, Item 3).
+      </p>
+      <table class="data-table" id="currentStockTable">
+        <thead>
+          <tr>
+            <th>Name and Nationality</th>
+            <th>Class of Shares</th>
+            <th>No. of Shares</th>
+            <th>Amount Subscribed (Php)</th>
+            <th>Amount Paid-up (Php)</th>
+            <th width="40"></th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <button type="button" class="btn btn-secondary" onclick="addCurrentStockRow()" style="margin-top: 8px;">+ Add Existing Stockholder</button>
+      
+      <div class="grid" style="margin-top: 15px;">
+        <div>
+          <label>Treasury Shares (No. of Shares, if any)</label>
+          <input type="number" id="treasuryShares" value="0">
+        </div>
+        <div>
+          <label>Treasury Shares - Amount Subscribed</label>
+          <input type="number" id="treasurySub" value="0.00" step="0.01">
+        </div>
+        <div>
+          <label>Treasury Shares - Amount Paid-up</label>
+          <input type="number" id="treasuryPaid" value="0.00" step="0.01">
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. Meetings & Checkboxes -->
+    <div class="card">
+      <h2>4. Meetings & Statutory Compliance Boxes</h2>
+      <div class="grid">
+        <div>
+          <label>Stockholders' Meeting Date</label>
+          <input type="date" id="shMeetingDate" required>
+        </div>
+        <div>
+          <label>Board of Directors Meeting Date</label>
+          <input type="date" id="bodMeetingDate" required>
+        </div>
+        <div>
+          <label>Meeting Format</label>
+          <select id="meetingFormat">
+            <option value="at the principal office">At the principal office</option>
+            <option value="through electronic means, in compliance with the rules set in SEC Memorandum Circular No. 6, s. 2020">Remote / Electronic Means (SEC MC 6, s. 2020)</option>
+          </select>
+        </div>
+        <div>
+          <label>Amended Article Number(s)</label>
+          <input type="text" id="amendedArticle" value="Article VII – Authorized Capital Stock" required>
+        </div>
+        
+        <div class="grid-full">
+          <label>Item 6 Statutory Compliance Checkboxes (Select which to mark):</label>
+          <div style="display:flex; gap:20px; flex-wrap:wrap; margin-top:6px;">
+            <label style="font-weight:normal; display:flex; align-items:center; gap:6px; cursor:pointer;">
+              <input type="checkbox" id="chkSec37" style="width:auto;"> Section 37 of the Revised Corporation Code
+            </label>
+            <label style="font-weight:normal; display:flex; align-items:center; gap:6px; cursor:pointer;">
+              <input type="checkbox" id="chkSec38" style="width:auto;" checked> Section 38 of the Revised Corporation Code
+            </label>
+            <label style="font-weight:normal; display:flex; align-items:center; gap:6px; cursor:pointer;">
+              <input type="checkbox" id="chkSec42" style="width:auto;"> Section 42 of the Revised Corporation Code
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. Directors, Officers & Treasurer Options -->
+    <div class="card">
+      <h2>5. Corporate Officers, Signatories & Treasurer's Option</h2>
+      <div class="grid">
+        <div>
+          <label>President Name</label>
+          <input type="text" id="presName" placeholder="JUAN DELA CRUZ" required>
+        </div>
+        <div>
+          <label>President TIN</label>
+          <input type="text" id="presTIN" placeholder="123-456-789-000">
+        </div>
+        <div>
+          <label>Treasurer Name</label>
+          <input type="text" id="treasName" placeholder="MARIA SANTOS" required>
+        </div>
+        <div>
+          <label>Treasurer TIN</label>
+          <input type="text" id="treasTIN" placeholder="234-567-890-000">
+        </div>
+        <div class="grid-full">
+          <label style="color:var(--primary);">Treasurer's Affidavit Consideration Clause (appended after subscription amount):</label>
+          <select id="treasPaymentMode">
+            <option value="in cash">in cash</option>
+            <option value="via conversion of liabilities to equity">via conversion of liabilities to equity</option>
+            <option value="partly in cash and partly via conversion of liabilities to equity">partly in cash and partly via conversion of liabilities to equity</option>
+          </select>
+        </div>
+        <div>
+          <label>Corporate Secretary Name</label>
+          <input type="text" id="secName" placeholder="ATTY. JOSE RIZAL" required>
+        </div>
+        <div>
+          <label>Corporate Secretary TIN</label>
+          <input type="text" id="secTIN" placeholder="345-678-901-000">
+        </div>
+        <div>
+          <label>Chairperson of Stockholders' Meeting</label>
+          <input type="text" id="chairName" placeholder="JUAN DELA CRUZ">
+        </div>
+        <div>
+          <label>Secretary of Stockholders' Meeting</label>
+          <input type="text" id="meetingSecName" placeholder="ATTY. JOSE RIZAL">
+        </div>
+      </div>
+
+      <h3 style="margin-top: 18px;">Board of Directors</h3>
+      <table class="data-table" id="bodTable">
+        <thead>
+          <tr>
+            <th>Director Name</th>
+            <th>TIN</th>
+            <th>ID / Competent Evidence of Identity</th>
+            <th width="40"></th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <button type="button" class="btn btn-secondary" onclick="addBodRow()" style="margin-top: 8px;">+ Add Director</button>
+    </div>
+
+    <!-- 6. Subscribers to the Increase -->
+    <div class="card">
+      <h2>6. Subscriptions to the Increase</h2>
+      <p style="font-size:0.85rem; color:#64748b;">
+        <b>Note:</b> If all subscribers pay in <b>Cash</b>, the "Mode of Payment" column is omitted from the table. If any subscriber pays via <b>Conversion</b>, the column will be automatically included.
+      </p>
+
+      <table class="data-table" id="subscribersTable">
+        <thead>
+          <tr>
+            <th>Subscriber Name</th>
+            <th>Nationality & Status</th>
+            <th>Residential Address</th>
+            <th>Shares Subscribed</th>
+            <th>Subscription Price / Share</th>
+            <th>Amount Paid (Php)</th>
+            <th>Mode of Payment</th>
+            <th>ID / Evidence of Identity</th>
+            <th width="40"></th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <button type="button" class="btn btn-secondary" onclick="addSubscriberRow()" style="margin-top: 8px;">+ Add Subscriber</button>
+    </div>
+
+    <!-- Actions -->
+    <div class="card" style="text-align: center;">
+      <button type="button" class="btn" style="font-size: 1.1rem; padding: 12px 28px;" onclick="generateDocuments()">
+        Generate Legal Documents
+      </button>
+    </div>
+  </form>
+</div>
+
+<!-- ================= DOCUMENT TEMPLATE PREVIEW / PRINT AREA ================= -->
+<div id="doc-preview">
+  <div class="no-print" style="text-align:center; padding:15px; background:#f1f5f9; border-bottom:1px solid #ccc; position:sticky; top:0; z-index:99;">
+    <button class="btn btn-success" onclick="downloadWordDoc()">Download as Word (.doc) - A4</button>
+    <button class="btn" onclick="window.print()">Print / Save as PDF</button>
+    <button class="btn btn-secondary" onclick="backToForm()">Back to Form Editor</button>
+  </div>
+  <div id="renderedDocs"></div>
+</div>
+
+<script>
+// --- Utility: Number to Words (Philippine Legal Format) ---
+function numberToWords(num) {
+  if (num === 0 || isNaN(num)) return "ZERO";
+  const a = ['', 'ONE', 'TWO', 'THREE', 'FOUR', 'FIVE', 'SIX', 'SEVEN', 'EIGHT', 'NINE', 'TEN', 'ELEVEN', 'TWELVE', 'THIRTEEN', 'FOURTEEN', 'FIFTEEN', 'SIXTEEN', 'SEVENTEEN', 'EIGHTEEN', 'NINETEEN'];
+  const b = ['', '', 'TWENTY', 'THIRTY', 'FORTY', 'FIFTY', 'SIXTY', 'SEVENTY', 'EIGHTY', 'NINETY'];
+  const g = ['', 'THOUSAND', 'MILLION', 'BILLION', 'TRILLION'];
+
+  let str = '';
+  let parts = num.toString().split('.');
+  let integerPart = parseInt(parts[0], 10);
+
+  let groupIdx = 0;
+  while (integerPart > 0) {
+    let rem = integerPart % 1000;
+    if (rem > 0) {
+      let groupStr = '';
+      let hundreds = Math.floor(rem / 100);
+      let tensUnits = rem % 100;
+      if (hundreds > 0) groupStr += a[hundreds] + ' HUNDRED ';
+      if (tensUnits < 20) groupStr += a[tensUnits] + ' ';
+      else groupStr += b[Math.floor(tensUnits / 10)] + (tensUnits % 10 > 0 ? '-' + a[tensUnits % 10] + ' ' : ' ');
+      str = groupStr + g[groupIdx] + ' ' + str;
+    }
+    integerPart = Math.floor(integerPart / 1000);
+    groupIdx++;
+  }
+  return str.trim();
+}
+
+function formatPesos(amount) {
+  const words = numberToWords(Math.floor(amount));
+  const cents = Math.round((amount - Math.floor(amount)) * 100);
+  const centWords = cents > 0 ? ` AND ${cents}/100` : '';
+  const numFormatted = amount.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return `${words}${centWords} PESOS (Php ${numFormatted})`;
+}
+
+function fmtNum(n) {
+  return (n || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+// --- Dynamic Row Handlers ---
+function addCurrentStockRow(name = '', shareClass = 'Common', shares = 1000, sub = 100000, paid = 100000) {
+  const tbody = document.querySelector('#currentStockTable tbody');
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><input type="text" class="cur-name" value="${name}" placeholder="e.g. JUAN DELA CRUZ / Filipino" required></td>
+    <td><input type="text" class="cur-class" value="${shareClass}"></td>
+    <td><input type="number" class="cur-shares" value="${shares}" oninput="recalcCurRow(this)" required></td>
+    <td><input type="number" class="cur-sub" value="${sub}" step="0.01" required></td>
+    <td><input type="number" class="cur-paid" value="${paid}" step="0.01" required></td>
+    <td><button type="button" class="btn btn-danger" onclick="this.closest('tr').remove();">X</button></td>
+  `;
+  tbody.appendChild(tr);
+}
+
+function recalcCurRow(el) {
+  const row = el.closest('tr');
+  const par = parseFloat(document.getElementById('parValue').value) || 0;
+  const shares = parseFloat(row.querySelector('.cur-shares').value) || 0;
+  const subInput = row.querySelector('.cur-sub');
+  const paidInput = row.querySelector('.cur-paid');
+  subInput.value = (shares * par).toFixed(2);
+  paidInput.value = (shares * par).toFixed(2);
+}
+
+function addBodRow(name = '', tin = '', idProof = '') {
+  const tbody = document.querySelector('#bodTable tbody');
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><input type="text" class="bod-name" value="${name}" placeholder="Full Name" required></td>
+    <td><input type="text" class="bod-tin" value="${tin}" placeholder="TIN"></td>
+    <td><input type="text" class="bod-id" value="${idProof}" placeholder="Passport / Driver's License"></td>
+    <td><button type="button" class="btn btn-danger" onclick="this.closest('tr').remove()">X</button></td>
+  `;
+  tbody.appendChild(tr);
+}
+
+function addSubscriberRow(name = '', nat = 'Filipino', addr = '', shares = 1000, price = 100, paid = 100000, mode = 'Cash', idProof = '') {
+  const tbody = document.querySelector('#subscribersTable tbody');
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><input type="text" class="sub-name" value="${name}" placeholder="Subscriber Name" required></td>
+    <td><input type="text" class="sub-nat" value="${nat}" placeholder="Filipino"></td>
+    <td><input type="text" class="sub-addr" value="${addr}" placeholder="Address"></td>
+    <td><input type="number" class="sub-shares" value="${shares}" oninput="recalcSubRow(this)" required></td>
+    <td><input type="number" class="sub-price" value="${price}" step="0.01" oninput="recalcSubRow(this)" required></td>
+    <td><input type="number" class="sub-paid" value="${paid}" step="0.01" required></td>
+    <td>
+      <select class="sub-mode">
+        <option value="Cash" ${mode === 'Cash' ? 'selected' : ''}>Cash</option>
+        <option value="Conversion" ${mode === 'Conversion' ? 'selected' : ''}>Conversion of Deposits/Advances</option>
+      </select>
+    </td>
+    <td><input type="text" class="sub-id" value="${idProof}" placeholder="ID Details"></td>
+    <td><button type="button" class="btn btn-danger" onclick="this.closest('tr').remove(); updateStats();">X</button></td>
+  `;
+  tbody.appendChild(tr);
+  updateStats();
+}
+
+function recalcSubRow(el) {
+  const row = el.closest('tr');
+  const shares = parseFloat(row.querySelector('.sub-shares').value) || 0;
+  const price = parseFloat(row.querySelector('.sub-price').value) || 0;
+  const paidInput = row.querySelector('.sub-paid');
+  paidInput.value = (shares * price).toFixed(2);
+  updateStats();
+}
+
+function updateStats() {
+  const par = parseFloat(document.getElementById('parValue').value) || 0;
+  const oldShares = parseFloat(document.getElementById('oldShares').value) || 0;
+  const newShares = parseFloat(document.getElementById('newShares').value) || 0;
+
+  const oldAcs = oldShares * par;
+  const newAcs = newShares * par;
+  const increase = newAcs - oldAcs;
+
+  let totSub = 0;
+  let totPaid = 0;
+  document.querySelectorAll('#subscribersTable tbody tr').forEach(tr => {
+    const s = parseFloat(tr.querySelector('.sub-shares').value) || 0;
+    const p = parseFloat(tr.querySelector('.sub-price').value) || 0;
+    const pd = parseFloat(tr.querySelector('.sub-paid').value) || 0;
+    totSub += (s * p);
+    totPaid += pd;
+  });
+
+  const reqSub = increase * 0.25;
+  const reqPaid = totSub * 0.25;
+
+  const validSub = totSub >= reqSub;
+  const validPaid = totPaid >= reqPaid;
+
+  const statsDiv = document.getElementById('capitalStats');
+  statsDiv.innerHTML = `
+    <b>Capital Increase:</b> Php ${fmtNum(increase)} | 
+    <b>25% Required Subscribed:</b> Php ${fmtNum(reqSub)} (Current: <span style="color:${validSub ? 'green' : 'red'}">Php ${fmtNum(totSub)}</span>) | 
+    <b>25% Required Paid:</b> Php ${fmtNum(reqPaid)} (Current: <span style="color:${validPaid ? 'green' : 'red'}">Php ${fmtNum(totPaid)}</span>)
+  `;
+}
+
+document.getElementById('parValue').addEventListener('input', updateStats);
+document.getElementById('oldShares').addEventListener('input', updateStats);
+document.getElementById('newShares').addEventListener('input', updateStats);
+
+window.onload = function() {
+  document.getElementById('execDate').value = '2026-10-30';
+  document.getElementById('shMeetingDate').value = '2026-10-15';
+  document.getElementById('bodMeetingDate').value = '2026-10-15';
+
+  addCurrentStockRow('JUAN DELA CRUZ (Filipino)', 'Common', 5000, 500000, 500000);
+  addCurrentStockRow('MARIA SANTOS (Filipino)', 'Common', 5000, 500000, 500000);
+
+  addBodRow('JUAN DELA CRUZ', '123-456-789-000', 'Passport P1234567B');
+  addBodRow('MARIA SANTOS', '234-567-890-000', 'Driver\'s License N01-12-345678');
+  addBodRow('PEDRO PENDUKO', '345-678-901-000', 'UMID 0011-2233445-6');
+
+  addSubscriberRow('JUAN DELA CRUZ', 'Filipino', '123 Pine St., Makati City', 10000, 100, 1000000, 'Cash', 'Passport P1234567B');
+  addSubscriberRow('MARIA SANTOS', 'Filipino', '456 Oak St., Taguig City', 5000, 100, 500000, 'Conversion', 'Driver\'s License N01-12-345678');
+};
+
+function backToForm() {
+  document.getElementById('doc-preview').style.display = 'none';
+  document.querySelector('.app-container').style.display = 'block';
+}
+
+function toggleBox(el) {
+  if (el.innerHTML.includes('☑')) {
+    el.innerHTML = '&#9744;';
+  } else {
+    el.innerHTML = '&#9745;';
+  }
+}
+
+// --- JSON BACKUP & IMPORT FEATURE ---
+function exportJSON() {
+  const data = {
+    version: '1.0',
+    corpName: document.getElementById('corpName').value,
+    formerCorpName: document.getElementById('formerCorpName').value,
+    principalAddress: document.getElementById('principalAddress').value,
+    execCity: document.getElementById('execCity').value,
+    execDate: document.getElementById('execDate').value,
+    parValue: document.getElementById('parValue').value,
+    oldShares: document.getElementById('oldShares').value,
+    newShares: document.getElementById('newShares').value,
+    treasuryShares: document.getElementById('treasuryShares').value,
+    treasurySub: document.getElementById('treasurySub').value,
+    treasuryPaid: document.getElementById('treasuryPaid').value,
+    shMeetingDate: document.getElementById('shMeetingDate').value,
+    bodMeetingDate: document.getElementById('bodMeetingDate').value,
+    meetingFormat: document.getElementById('meetingFormat').value,
+    amendedArticle: document.getElementById('amendedArticle').value,
+    chkSec37: document.getElementById('chkSec37').checked,
+    chkSec38: document.getElementById('chkSec38').checked,
+    chkSec42: document.getElementById('chkSec42').checked,
+    presName: document.getElementById('presName').value,
+    presTIN: document.getElementById('presTIN').value,
+    treasName: document.getElementById('treasName').value,
+    treasTIN: document.getElementById('treasTIN').value,
+    treasPaymentMode: document.getElementById('treasPaymentMode').value,
+    secName: document.getElementById('secName').value,
+    secTIN: document.getElementById('secTIN').value,
+    chairName: document.getElementById('chairName').value,
+    meetingSecName: document.getElementById('meetingSecName').value,
+    currentStocks: [],
+    directors: [],
+    subscribers: []
+  };
+
+  document.querySelectorAll('#currentStockTable tbody tr').forEach(tr => {
+    data.currentStocks.push({
+      name: tr.querySelector('.cur-name').value,
+      shareClass: tr.querySelector('.cur-class').value,
+      shares: tr.querySelector('.cur-shares').value,
+      sub: tr.querySelector('.cur-sub').value,
+      paid: tr.querySelector('.cur-paid').value
+    });
+  });
+
+  document.querySelectorAll('#bodTable tbody tr').forEach(tr => {
+    data.directors.push({
+      name: tr.querySelector('.bod-name').value,
+      tin: tr.querySelector('.bod-tin').value,
+      id: tr.querySelector('.bod-id').value
+    });
+  });
+
+  document.querySelectorAll('#subscribersTable tbody tr').forEach(tr => {
+    data.subscribers.push({
+      name: tr.querySelector('.sub-name').value,
+      nat: tr.querySelector('.sub-nat').value,
+      addr: tr.querySelector('.sub-addr').value,
+      shares: tr.querySelector('.sub-shares').value,
+      price: tr.querySelector('.sub-price').value,
+      paid: tr.querySelector('.sub-paid').value,
+      mode: tr.querySelector('.sub-mode').value,
+      id: tr.querySelector('.sub-id').value
+    });
+  });
+
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  const filename = (data.corpName || 'SEC_Capital_Increase').replace(/[^a-zA-Z0-9_-]/g, '_') + '_Backup.json';
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+function importJSON(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+
+      document.getElementById('corpName').value = data.corpName || '';
+      document.getElementById('formerCorpName').value = data.formerCorpName || '';
+      document.getElementById('principalAddress').value = data.principalAddress || '';
+      document.getElementById('execCity').value = data.execCity || '';
+      document.getElementById('execDate').value = data.execDate || '';
+      document.getElementById('parValue').value = data.parValue || 100;
+      document.getElementById('oldShares').value = data.oldShares || '';
+      document.getElementById('newShares').value = data.newShares || '';
+      document.getElementById('treasuryShares').value = data.treasuryShares || 0;
+      document.getElementById('treasurySub').value = data.treasurySub || 0;
+      document.getElementById('treasuryPaid').value = data.treasuryPaid || 0;
+
+      document.getElementById('shMeetingDate').value = data.shMeetingDate || '';
+      document.getElementById('bodMeetingDate').value = data.bodMeetingDate || '';
+      document.getElementById('meetingFormat').value = data.meetingFormat || 'at the principal office';
+      document.getElementById('amendedArticle').value = data.amendedArticle || 'Article VII – Authorized Capital Stock';
+
+      document.getElementById('chkSec37').checked = !!data.chkSec37;
+      document.getElementById('chkSec38').checked = !!data.chkSec38;
+      document.getElementById('chkSec42').checked = !!data.chkSec42;
+
+      document.getElementById('presName').value = data.presName || '';
+      document.getElementById('presTIN').value = data.presTIN || '';
+      document.getElementById('treasName').value = data.treasName || '';
+      document.getElementById('treasTIN').value = data.treasTIN || '';
+      document.getElementById('treasPaymentMode').value = data.treasPaymentMode || 'in cash';
+      document.getElementById('secName').value = data.secName || '';
+      document.getElementById('secTIN').value = data.secTIN || '';
+      document.getElementById('chairName').value = data.chairName || '';
+      document.getElementById('meetingSecName').value = data.meetingSecName || '';
+
+      document.querySelector('#currentStockTable tbody').innerHTML = '';
+      if (Array.isArray(data.currentStocks)) {
+        data.currentStocks.forEach(s => addCurrentStockRow(s.name, s.shareClass, s.shares, s.sub, s.paid));
+      }
+
+      document.querySelector('#bodTable tbody').innerHTML = '';
+      if (Array.isArray(data.directors)) {
+        data.directors.forEach(d => addBodRow(d.name, d.tin, d.id));
+      }
+
+      document.querySelector('#subscribersTable tbody').innerHTML = '';
+      if (Array.isArray(data.subscribers)) {
+        data.subscribers.forEach(s => addSubscriberRow(s.name, s.nat, s.addr, s.shares, s.price, s.paid, s.mode, s.id));
+      }
+
+      updateStats();
+      alert('Data restored successfully from backup!');
+    } catch (err) {
+      alert('Failed to import JSON file. Please ensure it is a valid backup file.');
+      console.error(err);
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+// --- Document Generation Logic ---
+function generateDocuments() {
+  const corpName = document.getElementById('corpName').value.toUpperCase();
+  const formerCorpName = document.getElementById('formerCorpName').value.trim();
+  const address = document.getElementById('principalAddress').value;
+  const execCity = document.getElementById('execCity').value;
+  const execDate = new Date(document.getElementById('execDate').value);
+  const execDay = execDate.getDate();
+  const execMonthYear = execDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+  const execYear = execDate.getFullYear();
+
+  const par = parseFloat(document.getElementById('parValue').value) || 0;
+  const oldShares = parseFloat(document.getElementById('oldShares').value) || 0;
+  const newShares = parseFloat(document.getElementById('newShares').value) || 0;
+
+  const oldAcs = oldShares * par;
+  const newAcs = newShares * par;
+  const increase = newAcs - oldAcs;
+
+  const shMeetingDate = new Date(document.getElementById('shMeetingDate').value).toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+  const bodMeetingDate = new Date(document.getElementById('bodMeetingDate').value).toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+  const meetingFormat = document.getElementById('meetingFormat').value;
+  const amendedArticle = document.getElementById('amendedArticle').value;
+
+  const sec37 = document.getElementById('chkSec37').checked;
+  const sec38 = document.getElementById('chkSec38').checked;
+  const sec42 = document.getElementById('chkSec42').checked;
+
+  const presName = document.getElementById('presName').value.toUpperCase();
+  const presTIN = document.getElementById('presTIN').value;
+  const treasName = document.getElementById('treasName').value.toUpperCase();
+  const treasTIN = document.getElementById('treasTIN').value;
+  const treasPaymentMode = document.getElementById('treasPaymentMode').value;
+  const secName = document.getElementById('secName').value.toUpperCase();
+  const secTIN = document.getElementById('secTIN').value;
+  const chairName = (document.getElementById('chairName').value || presName).toUpperCase();
+  const meetingSecName = (document.getElementById('meetingSecName').value || secName).toUpperCase();
+
+  // Read Current Stockholders
+  const currentStocks = [];
+  let curTotalShares = 0;
+  let curTotalSub = 0;
+  let curTotalPaid = 0;
+  document.querySelectorAll('#currentStockTable tbody tr').forEach(tr => {
+    const cName = tr.querySelector('.cur-name').value;
+    const cClass = tr.querySelector('.cur-class').value;
+    const cShares = parseFloat(tr.querySelector('.cur-shares').value) || 0;
+    const cSub = parseFloat(tr.querySelector('.cur-sub').value) || 0;
+    const cPaid = parseFloat(tr.querySelector('.cur-paid').value) || 0;
+    curTotalShares += cShares;
+    curTotalSub += cSub;
+    curTotalPaid += cPaid;
+    currentStocks.push({ name: cName, shareClass: cClass, shares: cShares, sub: cSub, paid: cPaid });
+  });
+
+  const treasuryShares = parseFloat(document.getElementById('treasuryShares').value) || 0;
+  const treasurySub = parseFloat(document.getElementById('treasurySub').value) || 0;
+  const treasuryPaid = parseFloat(document.getElementById('treasuryPaid').value) || 0;
+
+  curTotalShares += treasuryShares;
+  curTotalSub += treasurySub;
+  curTotalPaid += treasuryPaid;
+
+  // Read Directors
+  const directors = [];
+  document.querySelectorAll('#bodTable tbody tr').forEach(tr => {
+    directors.push({
+      name: tr.querySelector('.bod-name').value.toUpperCase(),
+      tin: tr.querySelector('.bod-tin').value,
+      id: tr.querySelector('.bod-id').value
+    });
+  });
+
+  // Read Subscribers
+  const subscribers = [];
+  let totalSubscribed = 0;
+  let totalPaid = 0;
+  let hasNonCash = false;
+
+  document.querySelectorAll('#subscribersTable tbody tr').forEach((tr, idx) => {
+    const sName = tr.querySelector('.sub-name').value.toUpperCase();
+    const nat = tr.querySelector('.sub-nat').value;
+    const addr = tr.querySelector('.sub-addr').value;
+    const sQty = parseFloat(tr.querySelector('.sub-shares').value) || 0;
+    const sPrice = parseFloat(tr.querySelector('.sub-price').value) || 0;
+    const sPaid = parseFloat(tr.querySelector('.sub-paid').value) || 0;
+    const sMode = tr.querySelector('.sub-mode').value;
+    const sId = tr.querySelector('.sub-id').value;
+    const subTotal = sQty * sPrice;
+
+    if (sMode !== 'Cash') {
+      hasNonCash = true;
+    }
+
+    totalSubscribed += subTotal;
+    totalPaid += sPaid;
+
+    subscribers.push({
+      item: idx + 1,
+      name: sName,
+      nat: nat,
+      addr: addr,
+      shares: sQty,
+      price: sPrice,
+      amount: subTotal,
+      paid: sPaid,
+      mode: sMode,
+      id: sId
+    });
+  });
+
+  const cashSubscribers = subscribers.filter(s => s.mode === 'Cash');
+  const convSubscribers = subscribers.filter(s => s.mode === 'Conversion');
+
+  let outputHtml = '';
+
+  // Render Item 3 Table Rows
+  let curStockRowsHtml = currentStocks.map(s => `
+    <tr>
+      <td>${s.name}</td>
+      <td style="text-align:center;">${s.shareClass}</td>
+      <td style="text-align:right;">${s.shares.toLocaleString()}</td>
+      <td style="text-align:right;">${fmtNum(s.sub)}</td>
+      <td style="text-align:right;">${fmtNum(s.paid)}</td>
+    </tr>
+  `).join('');
+
+  if (treasuryShares > 0) {
+    curStockRowsHtml += `
+      <tr>
+        <td>Treasury Shares</td>
+        <td style="text-align:center;">Common</td>
+        <td style="text-align:right;">${treasuryShares.toLocaleString()}</td>
+        <td style="text-align:right;">${fmtNum(treasurySub)}</td>
+        <td style="text-align:right;">${fmtNum(treasuryPaid)}</td>
+      </tr>
+    `;
+  }
+
+  // Render Subscriptions Table
+  let subTableHead = '';
+  let subRowsHtml = '';
+
+  if (hasNonCash) {
+    subTableHead = `
+      <tr>
+        <th>#</th>
+        <th>Name of Subscribers</th>
+        <th>Nationality</th>
+        <th>Residential Address</th>
+        <th>Number of Shares Subscribed</th>
+        <th>Amount Subscribed (Php)</th>
+        <th>Amount Paid-up (Php)</th>
+        <th>Mode of Payment</th>
+      </tr>`;
+    subRowsHtml = subscribers.map(s => `
+      <tr>
+        <td style="text-align:center;">${s.item}</td>
+        <td>${s.name}</td>
+        <td>${s.nat}</td>
+        <td>${s.addr}</td>
+        <td style="text-align:right;">${s.shares.toLocaleString()} Common</td>
+        <td style="text-align:right;">${fmtNum(s.amount)}</td>
+        <td style="text-align:right;">${fmtNum(s.paid)}</td>
+        <td>${s.mode === 'Cash' ? 'Cash' : 'Conversion of Liabilities'}</td>
+      </tr>
+    `).join('');
+  } else {
+    subTableHead = `
+      <tr>
+        <th>#</th>
+        <th>Name of Subscribers</th>
+        <th>Nationality</th>
+        <th>Residential Address</th>
+        <th>Number of Shares Subscribed</th>
+        <th>Amount Subscribed (in Php)</th>
+        <th>Amount of Paid-up (in Php)</th>
+      </tr>`;
+    subRowsHtml = subscribers.map(s => `
+      <tr>
+        <td style="text-align:center;">${s.item}</td>
+        <td>${s.name}</td>
+        <td>${s.nat}</td>
+        <td>${s.addr}</td>
+        <td style="text-align:right;">${s.shares.toLocaleString()} Common</td>
+        <td style="text-align:right;">${fmtNum(s.amount)}</td>
+        <td style="text-align:right;">${fmtNum(s.paid)}</td>
+      </tr>
+    `).join('');
+  }
+
+  let dirSignHtml = '';
+  for (let i = 0; i < directors.length; i += 2) {
+    const d1 = directors[i];
+    const d2 = directors[i+1];
+    dirSignHtml += `<tr>
+      <td style="border:none; padding-top:22px; width:50%;">
+        __________________________________<br>
+        <b>${d1.name}</b><br>
+        Director<br>
+        TIN: ${d1.tin}
+      </td>
+      <td style="border:none; padding-top:22px; width:50%;">
+        ${d2 ? `
+        __________________________________<br>
+        <b>${d2.name}</b><br>
+        Director<br>
+        TIN: ${d2.tin}
+        ` : ''}
+      </td>
+    </tr>`;
+  }
+
+  let idTableRowsHtml = directors.map(d => `
+    <tr>
+      <td>${d.name}</td>
+      <td>${d.id || 'Competent Evidence of Identity'}</td>
+    </tr>
+  `).join('');
+
+  // ================= 1. UNIFIED CERTIFICATION - BODY PAGE =================
+  outputHtml += `
+  <div class="doc-page">
+    <div class="venue-block">
+      Republic of the Philippines )<br>
+      ${execCity} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;) S.S.
+    </div>
+
+    <h2>UNIFIED CERTIFICATION FOR INCREASE IN AUTHORIZED CAPITAL STOCK OF</h2>
+    <h3>${corpName}</h3>
+    ${formerCorpName ? `<div style="text-align:center; font-style:italic; margin-bottom:6px;">[Formerly: ${formerCorpName}]</div>` : ''}
+    <br>
+    <p style="text-indent: 40px; text-align: justify;">
+      We, the undersigned majority of the Board of Directors, the Corporate Secretary, the Chairperson, and the Secretary of the stockholders’ meeting of <b>${corpName}</b> (“Corporation”), a corporation duly organized and existing under the laws of the Republic of the Philippines, with principal office address at ${address}, do hereby certify:
+    </p>
+
+    <h4>I. Approval and Details for the Increase of Authorized Capital Stock</h4>
+    <p style="text-indent: 40px; text-align: justify;">
+      1. That at the special meeting of the stockholders of Corporation ${meetingFormat} on <b>${shMeetingDate}</b>, at which meeting there was a quorum, the stockholders representing at least two-thirds (2/3) of the outstanding capital stock in person or by proxy, approved the increase of the corporation’s authorized capital stock (ACS) 
+      from <b>${formatPesos(oldAcs)}</b> divided into <b>${oldShares.toLocaleString()}</b> shares, with a par value of <b>${formatPesos(par)}</b> per share,
+      to <b>${formatPesos(newAcs)}</b> divided into <b>${newShares.toLocaleString()}</b> shares, with a par value of <b>${formatPesos(par)}</b> per share;
+    </p>
+    <p style="text-indent: 40px; text-align: justify;">
+      2. That the increase was likewise approved by the majority of the directors at a meeting held on <b>${bodMeetingDate}</b>;
+    </p>
+    <p style="text-indent: 40px; text-align: justify;">
+      3. That as of <b>${shMeetingDate}</b>, the details of the present capital stock, are as follows:
+    </p>
+
+    <table class="doc-table">
+      <thead>
+        <tr>
+          <th>Name and Nationality</th>
+          <th>Class of Shares</th>
+          <th>No. of Shares</th>
+          <th>Amount Subscribed (at par/stated value)</th>
+          <th>Amount Paid-up (at par/stated value)</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${curStockRowsHtml}
+        <tr style="font-weight:bold; background:#fafafa;">
+          <td colspan="2" style="text-align:center;">Total</td>
+          <td style="text-align:right;">${curTotalShares.toLocaleString()}</td>
+          <td style="text-align:right;">${fmtNum(curTotalSub)}</td>
+          <td style="text-align:right;">${fmtNum(curTotalPaid)}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p style="text-indent: 40px; text-align: justify;">
+      4. That out of the increase of <b>${formatPesos(increase)}</b>, the amount of <b>${formatPesos(totalSubscribed)}</b> has been subscribed and out of said subscription, the amount of <b>${formatPesos(totalPaid)}</b> has been actually paid by the subscribers ${hasNonCash ? 'as follows:' : 'through cash as follows:'}
+    </p>
+
+    <table class="doc-table">
+      <thead>
+        ${subTableHead}
+      </thead>
+      <tbody>
+        ${subRowsHtml}
+        <tr style="font-weight:bold; background:#fafafa;">
+          <td colspan="4" style="text-align:center;">TOTAL</td>
+          <td style="text-align:right;">${subscribers.reduce((a,b)=>a+b.shares,0).toLocaleString()}</td>
+          <td style="text-align:right;">${fmtNum(totalSubscribed)}</td>
+          <td style="text-align:right;">${fmtNum(totalPaid)}</td>
+          ${hasNonCash ? '<td></td>' : ''}
+        </tr>
+      </tbody>
+    </table>
+
+    <p style="text-align: justify;">
+      5. That no bonded indebtedness has been incurred, created, or increased as of the date of the meeting; and
+    </p>
+    <p style="text-align: justify; margin-bottom: 4px;">
+      6. That the requirements of:
+    </p>
+    
+    <div style="margin-left: 20px; margin-bottom: 15px; line-height: 1.8;">
+      <div class="checkbox-item" onclick="toggleBox(this.querySelector('.box-mark'))">
+        <span class="box-mark">${sec37 ? '&#9745;' : '&#9744;'}</span>
+        <span>Section 37 of the Revised Corporation Code of the Philippines have been complied with;</span>
+      </div>
+      <div class="checkbox-item" onclick="toggleBox(this.querySelector('.box-mark'))">
+        <span class="box-mark">${sec38 ? '&#9745;' : '&#9744;'}</span>
+        <span>Section 38 of the Revised Corporation Code of the Philippines have been complied with;</span>
+      </div>
+      <div class="checkbox-item" onclick="toggleBox(this.querySelector('.box-mark'))">
+        <span class="box-mark">${sec42 ? '&#9745;' : '&#9744;'}</span>
+        <span>Section 42 of the Revised Corporation Code of the Philippines have been complied with;</span>
+      </div>
+    </div>
+
+    <h4>II. Approval and Details for the Amended Articles of Incorporation</h4>
+    <p style="text-indent: 40px; text-align: justify;">
+      1. That the Amended Articles of Incorporation of the said corporation attached hereto is a true and correct copy of the Articles of Incorporation of said Corporation, as amended by stockholders representing at least 2/3 of the outstanding capital stock and by a majority of the Board of Directors on <b>${shMeetingDate}</b>; and
+    </p>
+    <p style="text-indent: 40px; text-align: justify;">
+      2. That the amended provisions refer to <b>${amendedArticle}</b>.
+    </p>
+
+    <h4>III. No Intra-Corporate Dispute (with Undertaking)</h4>
+    <p style="text-indent: 40px; text-align: justify;">
+      To the best of our knowledge, as of the date of execution and notarization of this certificate, no action or proceeding has been filed or is pending before any Court involving an intra-corporate dispute and/or any claim by any person or group against the board of directors, individual director and/or major corporate officer/s of the Corporation as its duly elected and/or appointed director or officer or vice versa.
+    </p>
+    <p style="text-indent: 40px; text-align: justify;">
+      If any action or proceeding referred to in the previous paragraph is initiated after the date of this certificate's execution and notarization and before the release of the Certificate of Approval of increase in capital stock, we shall notify the Department or Office of the Commission where the application is submitted, by providing the softcopy and hardcopy of a duly notarized secretary’s certificate, within three (3) calendar days of receiving notice of filing or pendency of an intra-corporate dispute.
+    </p>
+
+    <h4>IV. Waiver of Preemptive Rights</h4>
+    <p style="text-indent: 40px; text-align: justify;">
+      In connection with the aforesaid increase in authorized capital stock, all non-subscribing stockholders have waived their respective preemptive rights in relation to Section 38 of Republic Act. No. 11232, otherwise known as the Revised Corporation Code of the Philippines.
+    </p>
+  </div>
+
+  <!-- ================= UNIFIED CERTIFICATION: DEDICATED SIGNATURE & JURAT PAGE ================= -->
+  <div class="doc-page">
+    <p style="text-indent: 40px; margin-top: 15px;">
+      IN WITNESS WHEREOF, we have hereunto signed this certificate this ${execDay} day of ${execMonthYear} at ${execCity}, Philippines.
+    </p>
+
+    <table style="width:100%; border:none; margin-top:15px;">
+      ${dirSignHtml}
+      <tr>
+        <td style="border:none; padding-top:22px;">
+          __________________________________<br>
+          <b>${secName}</b><br>
+          Corporate Secretary<br>
+          TIN: ${secTIN}
+        </td>
+        <td style="border:none; padding-top:22px;"></td>
+      </tr>
+      <tr>
+        <td style="border:none; padding-top:22px;">
+          COUNTERSIGNED BY:<br><br>
+          __________________________________<br>
+          <b>${chairName}</b><br>
+          Chairperson of the Stockholders’ Meeting
+        </td>
+        <td style="border:none; padding-top:22px;"><br><br>
+          __________________________________<br>
+          <b>${meetingSecName}</b><br>
+          Secretary of the Stockholders’ Meeting
+        </td>
+      </tr>
+    </table>
+
+    <br><br>
+    <div style="border-top: 1px dashed #666; padding-top: 15px;">
+      <p style="text-indent: 40px; text-align: justify;">
+        SUBSCRIBED AND SWORN to before me this _____ day of _______________ ${execYear} in ${execCity}, affiants exhibited to me their Competent Evidence of Identity:
+      </p>
+      <table class="doc-table" style="width:85%; margin:10px auto;">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Competent Evidence of Identity</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${idTableRowsHtml}
+        </tbody>
+      </table>
+      
+      <!-- NOTARY PUBLIC RIGHT-ALIGNED, DOCKET LEFT-ALIGNED -->
+      <div class="notary-title">NOTARY PUBLIC</div>
+      <div class="notary-docket">
+        Doc. No. &nbsp;______;<br>
+        Page No. ______;<br>
+        Book No. ______;<br>
+        Series of ${execYear}.
+      </div>
+    </div>
+  </div>`;
+
+  // ================= 2. TREASURER'S AFFIDAVIT =================
+  outputHtml += `
+  <div class="doc-page">
+    <div class="venue-block">
+      Republic of the Philippines )<br>
+      ${execCity} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;) S.S.
+    </div>
+
+    <h2>TREASURER’S AFFIDAVIT</h2>
+    <br>
+    <p style="text-indent: 40px; text-align: justify;">
+      I, <b>${treasName}</b>, after being sworn, deposes and says:
+    </p>
+    <p style="text-indent: 40px; text-align: justify;">
+      That I was elected Treasurer by the stockholders of <b>${corpName}</b>, to act as such until my successor has been duly elected and qualified in accordance with by-laws of the corporation, and that as such treasurer, I have been authorized to receive for the corporation all subscriptions paid in by the subscribers for capital stock;
+    </p>
+    <p style="text-indent: 40px; text-align: justify;">
+      that out of <b>${formatPesos(increase)}</b> representing the increase in the authorized capital stock, <b>${formatPesos(totalSubscribed)}</b> has been actually subscribed and that of said subscription <b>${formatPesos(totalPaid)}</b> <u>${treasPaymentMode}</u>, has been actually paid to for the benefit and to the credit of the corporation and that at least twenty-five per centum (25%) of the increase in authorized capital has been subscribed and that at least twenty-five per centum (25%) of such subscription has been actually paid to me for the benefit and to the credit of the corporation and that said payment represents fresh and additional paid in capital of the corporation.
+    </p>
+
+    <br><br><br>
+    <div style="float:right; text-align:center; width:280px;">
+      ______________________________________<br>
+      <b>${treasName}</b><br>
+      Treasurer
+    </div>
+    <div style="clear:both;"></div>
+
+    <br><br><br>
+    <p>
+      SUBSCRIBED AND SWORN to before me this _____ day of ________________ ${execYear}, affiant exhibiting to me her/his Competent Evidence of Identity / TIN: ${treasTIN}.
+    </p>
+    
+    <!-- NOTARY PUBLIC RIGHT-ALIGNED, DOCKET LEFT-ALIGNED -->
+    <div class="notary-title">NOTARY PUBLIC</div>
+    <div class="notary-docket">
+      Doc. No. &nbsp;______;<br>
+      Page No. ______;<br>
+      Book No. ______;<br>
+      Series of ${execYear}.
+    </div>
+  </div>`;
+
+  // ================= 3. SUBSCRIPTION CONTRACT (FOR CASH) =================
+  if (cashSubscribers.length > 0) {
+    cashSubscribers.forEach(sub => {
+      outputHtml += `
+      <!-- Subscription Contract: Terms Page -->
+      <div class="doc-page">
+        <h2>SUBSCRIPTION CONTRACT</h2>
+        <br>
+        <p><b>KNOW ALL PERSONS BY THESE PRESENTS:</b></p>
+        <p style="text-indent: 40px; text-align: justify;">
+          This subscription contract is made and entered this ${execDay} day of ${execMonthYear}, ${execCity}, Philippines, by and between:
+        </p>
+        <p style="text-indent: 40px; text-align: justify;">
+          <b>${corpName}</b>, a corporation organized and existing under the laws of the Philippines, with principal office address at ${address}, duly represented by its President, <b>${presName}</b>, of legal age, Filipino, and Treasurer, <b>${treasName}</b>, of legal age, Filipino (referred to here as, “the Corporation”);
+        </p>
+        <p style="text-align: center;">- and -</p>
+        <p style="text-indent: 40px; text-align: justify;">
+          <b>${sub.name}</b>, of legal age, ${sub.nat}, and resident of ${sub.addr} (referred to herein as, “Subscriber”).
+        </p>
+        <p style="text-align:center; font-weight:bold;">WITNESSETH: THAT –</p>
+        <p style="text-indent: 40px; text-align: justify;">
+          WHEREAS, the Corporation has an authorized capital stock of <b>${formatPesos(oldAcs)}</b>;
+        </p>
+        <p style="text-indent: 40px; text-align: justify;">
+          WHEREAS, on <b>${shMeetingDate}</b>, the board of directors and stockholders of the Corporation approved the Increase of its authorized capital stock to <b>${formatPesos(newAcs)}</b> divided into <b>${newShares.toLocaleString()}</b> shares, with a par value of <b>${formatPesos(par)}</b>, per share;
+        </p>
+        <p style="text-indent: 40px; text-align: justify;">
+          WHEREAS, the Corporation has offered to sell shares of stock from said increase of authorized capital stock and the Subscribers are willing and ready to buy the same;
+        </p>
+        <p style="text-indent: 40px; text-align: justify;">
+          NOW, THEREFORE, for and in consideration of the foregoing and the subscription price indicated hereunder, the parties hereto agree as follows:
+        </p>
+        <p style="text-indent: 40px; text-align: justify;">
+          1. The Corporation has issued to the Subscriber the following shares of stock:
+        </p>
+        <table class="doc-table" style="width:85%; margin:15px auto;">
+          <thead>
+            <tr>
+              <th>NO. OF SHARES</th>
+              <th>SUBSCRIPTION PRICE</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="text-align:center;"><b>${sub.shares.toLocaleString()} Common Shares</b></td>
+              <td style="text-align:center;"><b>${formatPesos(sub.amount)}</b></td>
+            </tr>
+          </tbody>
+        </table>
+        <p style="text-indent: 40px; text-align: justify;">
+          2. Of the subscription price, the Subscriber has paid to the Corporation the amount of <b>${formatPesos(sub.paid)}</b> in <b>CASH</b>.
+        </p>
+        <p style="text-indent: 40px; text-align: justify;">
+          3. That said the amount paid was duly received by the Treasurer of the Corporation.
+        </p>
+        <p style="text-indent: 40px; text-align: justify;">
+          4. The parties hereby confirm the foregoing upon signing of the Agreement.
+        </p>
+      </div>
+
+      <!-- Subscription Contract: SEPARATED SIGNATURE & ACKNOWLEDGMENT PAGE -->
+      <div class="doc-page">
+        <p style="text-indent: 40px; margin-top: 15px;">
+          IN WITNESS WHEREOF, we have hereunto set our hands this ${execDay} day of ${execMonthYear} at ${execCity}.
+        </p>
+        <br><br>
+        <table style="width:100%; border:none;">
+          <tr>
+            <td style="width:50%; border:none; text-align:center;">
+              ________________________________<br>
+              <b>${sub.name}</b><br>
+              Subscriber
+            </td>
+            <td style="width:50%; border:none; text-align:center;">
+              Certified by:<br><br>
+              ________________________________<br>
+              <b>${presName}</b><br>
+              President<br><br>
+              ________________________________<br>
+              <b>${treasName}</b><br>
+              Treasurer
+            </td>
+          </tr>
+        </table>
+        <br><br><br>
+        <div style="border-top:1px dashed #666; padding-top:20px;">
+          <div style="text-align:center; font-weight:bold; margin-bottom:14px;">ACKNOWLEDGMENT</div>
+          
+          <div class="venue-block">
+            Republic of the Philippines )<br>
+            City of ${execCity} ) S.S.
+          </div>
+
+          <p style="text-indent:40px; text-align:justify;">
+            BEFORE ME, a Notary Public in and for ${execCity}, Philippines, this _____ day of _______________ ${execYear}, personally appeared:
+          </p>
+          <table class="doc-table" style="width:85%; margin:10px auto;">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>TIN</th>
+                <th>Competent Evidence of Identity</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>${sub.name}</td>
+                <td>-</td>
+                <td>${sub.id || 'Evidence of Identity'}</td>
+              </tr>
+              <tr>
+                <td>${presName}</td>
+                <td>${presTIN}</td>
+                <td>Government Issued ID</td>
+              </tr>
+              <tr>
+                <td>${treasName}</td>
+                <td>${treasTIN}</td>
+                <td>Government Issued ID</td>
+              </tr>
+            </tbody>
+          </table>
+          <p style="text-indent:40px; text-align:justify;">
+            All known to me and to me known to be the same persons who executed the foregoing Subscription Contract and they acknowledged to me that the same is their free and voluntary act and deed.
+          </p>
+          
+          <!-- NOTARY PUBLIC RIGHT-ALIGNED, DOCKET LEFT-ALIGNED -->
+          <div class="notary-title">NOTARY PUBLIC</div>
+          <div class="notary-docket">
+            Doc. No. &nbsp;______;<br>
+            Page No. ______;<br>
+            Book No. ______;<br>
+            Series of ${execYear}.
+          </div>
+        </div>
+      </div>`;
+    });
+  }
+
+  // ================= 4. DEED OF ASSIGNMENT (CONVERSION OF LIABILITIES) =================
+  if (convSubscribers.length > 0) {
+    convSubscribers.forEach(sub => {
+      outputHtml += `
+      <!-- Deed of Assignment: Terms Page -->
+      <div class="doc-page">
+        <h2>DEED OF ASSIGNMENT</h2>
+        <br>
+        <p><b>KNOW ALL MEN BY THESE PRESENTS:</b></p>
+        <p style="text-indent: 40px; text-align: justify;">
+          This Deed of Assignment made and executed on ${execDay} day of ${execMonthYear}, by and between:
+        </p>
+        <p style="text-indent: 40px; text-align: justify;">
+          <b>${sub.name}</b>, of legal age, ${sub.nat}, single and with postal address at ${sub.addr}, hereinafter referred to as the “<b>ASSIGNOR</b>”;
+        </p>
+        <p style="text-align: center;">- and -</p>
+        <p style="text-indent: 40px; text-align: justify;">
+          <b>${corpName}</b>, a corporation duly organized and existing by virtue of the laws of the Philippines, with principal office address at ${address}, represented by its President, <b>${presName}</b>, hereinafter referred to as the “<b>ASSIGNEE</b>”.
+        </p>
+        <p style="text-align: center; font-weight: bold;">- Witnesseth that -</p>
+        <p style="text-indent: 40px; text-align: justify;">
+          WHEREAS, the ASSIGNOR made certain cash advances in the form of Deposits for Future Stock Subscriptions in favor of the Assignee in the amount of <b>${formatPesos(sub.paid)}</b> as reflected in the records of the Assignee (the “Deposits”);
+        </p>
+        <p style="text-indent: 40px; text-align: justify;">
+          WHEREAS, the Board of Directors and the Stockholders of the Assignee have resolved and approved the increase in the authorized capital stock from <b>${formatPesos(oldAcs)}</b> divided into <b>${oldShares.toLocaleString()}</b> common shares with a par value <b>${formatPesos(par)}</b> per share to <b>${formatPesos(newAcs)}</b> divided into <b>${newShares.toLocaleString()}</b> common shares with a par value <b>${formatPesos(par)}</b> per share;
+        </p>
+        <p style="text-indent: 40px; text-align: justify;">
+          WHEREAS, the ASSIGNOR desires to convert the Deposits into <b>${sub.shares.toLocaleString()}</b> common shares of the Assignee with a subscription price of <b>${formatPesos(sub.price)}</b> per share;
+        </p>
+        <p style="text-indent: 40px; text-align: justify;">
+          WHEREAS, the Board of Directors and Stockholders of the Assignee have authorized the Assignee to accept the subscription by the Assignor to the said <b>${sub.shares.toLocaleString()}</b> common shares at subscription price of <b>${formatPesos(sub.price)}</b> per share or a total value of <b>${formatPesos(sub.amount)}</b> fully payable by way of conversion into equity of the Deposits in the amount of <b>${formatPesos(sub.paid)}</b>;
+        </p>
+        <p style="text-indent: 40px; text-align: justify;">
+          NOW THEREFORE, the parties have agreed and do hereby agree that for and in consideration of the foregoing premises, Assignor hereby irrevocably assigns, transfers, and conveys in favor of the Assignee, its successors and assigns the Deposit amounting to <b>${formatPesos(sub.paid)}</b> as full payment for his/her subscription to <b>${sub.shares.toLocaleString()}</b> common shares at a subscription price of <b>${formatPesos(sub.price)}</b> per share or a total value of <b>${formatPesos(sub.amount)}</b>.
+        </p>
+      </div>
+
+      <!-- Deed of Assignment: SEPARATED SIGNATURE & ACKNOWLEDGMENT PAGE -->
+      <div class="doc-page">
+        <p style="text-indent: 40px; margin-top: 15px;">
+          IN WITNESS WHEREOF, the parties have caused this Deed to be signed in their respective names this ${execDay} day of ${execMonthYear} at ${execCity}.
+        </p>
+        <br><br>
+        <table style="width:100%; border:none;">
+          <tr>
+            <td style="width:50%; border:none; text-align:center;">
+              <b>ASSIGNOR:</b><br><br><br>
+              ________________________________<br>
+              <b>${sub.name}</b>
+            </td>
+            <td style="width:50%; border:none; text-align:center;">
+              <b>ASSIGNEE:</b><br>
+              <b>${corpName}</b><br><br>
+              By:<br><br>
+              ________________________________<br>
+              <b>${presName}</b>, President
+            </td>
+          </tr>
+        </table>
+        <br><br>
+        <div style="text-align:center; font-weight:bold;">SIGNED IN THE PRESENCE OF:</div>
+        <br>
+        <table style="width:100%; border:none;">
+          <tr>
+            <td style="border:none; text-align:center;">______________________________</td>
+            <td style="border:none; text-align:center;">______________________________</td>
+          </tr>
+        </table>
+        <br><br>
+        <div style="border-top:1px dashed #666; padding-top:20px;">
+          <div style="text-align:center; font-weight:bold; margin-bottom:14px;">ACKNOWLEDGMENT</div>
+          
+          <div class="venue-block">
+            REPUBLIC OF THE PHILIPPINES ]<br>
+            ${execCity.toUpperCase()} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;] S.S.
+          </div>
+
+          <p style="text-indent:40px; text-align:justify;">
+            BEFORE ME, a Notary Public for and in the above-named jurisdiction on this _____ day of _______________ ${execYear}, personally appeared the following:
+          </p>
+          <table class="doc-table" style="width:85%; margin:10px auto;">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Competent Evidence of Identity</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>${sub.name}</td>
+                <td>${sub.id || 'Competent Evidence of Identity'}</td>
+              </tr>
+              <tr>
+                <td>${presName}</td>
+                <td>Government Issued ID</td>
+              </tr>
+            </tbody>
+          </table>
+          <p style="text-indent:40px; text-align:justify;">
+            who are known to me and to me known to be the same persons who executed the foregoing Deed of Assignment, and acknowledged to me that the same is their free and voluntary act and deed and/or that of the entity they represent.
+          </p>
+          
+          <!-- NOTARY PUBLIC RIGHT-ALIGNED, DOCKET LEFT-ALIGNED -->
+          <div class="notary-title">NOTARY PUBLIC</div>
+          <div class="notary-docket">
+            Doc. No. &nbsp;______;<br>
+            Page No. ______;<br>
+            Book No. ______;<br>
+            Series of ${execYear}.
+          </div>
+        </div>
+      </div>`;
+    });
+  }
+
+  // Display Rendered Output
+  document.getElementById('renderedDocs').innerHTML = outputHtml;
+  document.querySelector('.app-container').style.display = 'none';
+  document.getElementById('doc-preview').style.display = 'block';
+  window.scrollTo(0, 0);
+}
+
+// --- Save / Export to Word (.doc) formatted to A4 ---
+function downloadWordDoc() {
+  const corpName = (document.getElementById('corpName').value || 'Corporate').replace(/[^a-zA-Z0-9_-]/g, '_');
+  const pages = document.querySelectorAll('#renderedDocs .doc-page');
+  
+  let combinedBody = '';
+  pages.forEach((page, index) => {
+    combinedBody += `<div>${page.innerHTML}</div>`;
+    if (index < pages.length - 1) {
+      combinedBody += `<br clear="all" style="mso-special-character:line-break;page-break-before:always" />`;
+    }
+  });
+
+  const wordTemplate = `
+    <html xmlns:o='urn:schemas-microsoft-com:office:office' 
+          xmlns:w='urn:schemas-microsoft-com:office:word' 
+          xmlns='http://www.w3.org/TR/REC-html40'>
+    <head>
+      <meta charset='utf-8'>
+      <title>SEC Increase Documents</title>
+      <style>
+        @page Section1 {
+          size: 21.0cm 29.7cm; /* Exact A4 dimensions */
+          margin: 1.0in 1.0in 1.0in 1.0in;
+          mso-header-margin: 36.0pt;
+          mso-footer-margin: 36.0pt;
+          mso-paper-source: 0;
+        }
+        div.Section1 {
+          page: Section1;
+        }
+        body {
+          font-family: 'Times New Roman', serif;
+          font-size: 11pt;
+          line-height: 1.35;
+        }
+        h2, h3, h4 {
+          text-align: center;
+          text-transform: uppercase;
+          margin: 4pt 0;
+        }
+        table.doc-table {
+          width: 100%;
+          border-collapse: collapse;
+          margin: 8pt 0;
+          font-size: 10pt;
+        }
+        table.doc-table th, table.doc-table td {
+          border: 1pt solid black;
+          padding: 4pt 6pt;
+        }
+        table.doc-table th {
+          text-align: center;
+          font-weight: bold;
+        }
+        .venue-block {
+          text-align: left;
+          line-height: 1.2;
+          margin-bottom: 14pt;
+        }
+        .notary-title {
+          text-align: right;
+          margin-top: 18pt;
+          margin-bottom: 18pt;
+        }
+        .notary-docket {
+          text-align: left;
+          line-height: 1.4;
+        }
+        .box-mark {
+          font-family: 'Segoe UI Symbol', 'DejaVu Sans', Arial, sans-serif;
+          font-size: 12pt;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="Section1">
+        ${combinedBody}
+      </div>
+    </body>
+    </html>
+  `;
+
+  const blob = new Blob(['\ufeff', wordTemplate], {
+    type: 'application/msword'
+  });
+
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${corpName}_SEC_Increase_Documents_A4.doc`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+</script>
+</body>
+</html>
