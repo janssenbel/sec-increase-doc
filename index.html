@@ -107,28 +107,28 @@
       background: white;
       width: 210mm; /* A4 size */
       min-height: 297mm;
-      padding: 25.4mm; /* 1 inch margin */
+      padding: 20mm; /* 20mm margin */
       margin: 20px auto;
       box-shadow: 0 0 10px rgba(0,0,0,0.15);
       font-family: 'Times New Roman', Times, serif;
       font-size: 10.5pt;
       line-height: 1.35;
       color: #000;
-    }
-    .doc-page h2, .doc-page h3 {
-      text-align: center;
-      color: #000;
-      margin: 4px 0;
-      text-transform: uppercase;
+      box-sizing: border-box;
+      position: relative;
     }
     
-    .unified-main-title {
+    /* Main Document Titles: EXACTLY 12PT */
+    .doc-main-title {
       font-size: 12pt !important;
       text-align: center !important;
       font-weight: bold;
       text-transform: uppercase;
-      margin: 4px 0;
+      margin: 4px 0 12px 0;
+      line-height: 1.3;
     }
+
+    /* Section Headings: EXACTLY 11PT & LEFT ALIGNED */
     .unified-section-title {
       font-size: 11pt !important;
       text-align: left !important;
@@ -138,18 +138,25 @@
       text-transform: none !important;
     }
 
+    /* Table Formatting & Anti-Cut Rules */
     .doc-table {
       width: 100%;
       border-collapse: collapse;
       margin: 10px 0;
       font-size: 9.5pt;
+      table-layout: auto;
+      word-break: break-word;
     }
     .doc-table th, .doc-table td {
       border: 1px solid black;
       padding: 4px 6px;
       text-align: left;
     }
-    .doc-table th { text-align: center; font-weight: bold; }
+    .doc-table th { 
+      text-align: center; 
+      font-weight: bold; 
+      background: #fbfbfb;
+    }
     
     .venue-block {
       text-align: left !important;
@@ -185,22 +192,54 @@
       user-select: none;
     }
 
-    /* Print Formatting */
+    /* ================= STRICT PRINT & PDF RULES ================= */
     @media print {
+      /* Remove browser default URL, title, date headers & footers */
       @page {
         size: A4 portrait;
-        margin: 20mm;
+        margin: 0 !important;
       }
-      body { background: white; margin: 0; padding: 0; }
-      .no-print { display: none !important; }
-      #doc-preview { display: block !important; }
+      html, body {
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #fff !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      .no-print {
+        display: none !important;
+      }
+      #doc-preview {
+        display: block !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
       .doc-page {
-        box-shadow: none;
-        margin: 0;
-        width: 100%;
-        min-height: auto;
-        padding: 0;
+        box-shadow: none !important;
+        margin: 0 !important;
+        width: 210mm !important;
+        min-height: 297mm !important;
+        height: auto !important;
+        padding: 20mm !important; /* Replaces browser margin to prevent clipping */
         page-break-after: always !important;
+        break-after: page !important;
+      }
+      .doc-page:last-child {
+        page-break-after: auto !important;
+        break-after: auto !important;
+      }
+      /* Prevent ugly table cuts across page lines */
+      table {
+        page-break-inside: auto !important;
+        break-inside: auto !important;
+      }
+      tr, td, th {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+      }
+      .venue-block, .notary-title, .notary-docket, .checkbox-item, .signatory-container {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
       }
     }
   </style>
@@ -453,6 +492,9 @@
     <button class="btn btn-success" onclick="downloadWordDoc()">Download as Word (.doc) - A4</button>
     <button class="btn" onclick="window.print()">Print / Save as PDF</button>
     <button class="btn btn-secondary" onclick="backToForm()">Back to Form Editor</button>
+    <div style="font-size:0.85rem; color:#64748b; margin-top:6px;">
+      <b>PDF Tip:</b> In the print dialog, ensure Paper Size is set to <b>A4</b>. (Browser headers & footers are automatically disabled by code).
+    </div>
   </div>
   <div id="renderedDocs"></div>
 </div>
@@ -693,7 +735,7 @@ function toggleBox(el) {
 // --- JSON BACKUP & IMPORT FEATURE ---
 function exportJSON() {
   const data = {
-    version: '1.5',
+    version: '1.6',
     corpName: document.getElementById('corpName').value,
     formerCorpName: document.getElementById('formerCorpName').value,
     principalAddress: document.getElementById('principalAddress').value,
@@ -819,7 +861,7 @@ function importJSON(event) {
         data.directors.forEach(d => addBodRow(d.name, d.tin, d.id));
       }
 
-      document.querySelector('#subscribersTable tbody').innerHTML = '';
+      document.querySelector('#subscribersTable tbody tr').innerHTML = '';
       if (Array.isArray(data.subscribers)) {
         data.subscribers.forEach(s => addSubscriberRow(s.name, s.tin || '', s.nat, s.addr, s.shares, s.price, s.paid, s.mode, s.id));
       }
@@ -1001,13 +1043,13 @@ function generateDocuments() {
   if (hasNonCash) {
     subTableHead = `
       <tr>
-        <th>#</th>
-        <th>Name of Subscribers</th>
-        <th>Nationality</th>
-        <th>Residential Address</th>
-        <th>Number of Shares Subscribed</th>
-        <th>Amount Subscribed (Php)</th>
-        <th>Amount Paid-up (Php)</th>
+        <th style="width:5%;">#</th>
+        <th style="width:23%;">Name of Subscribers</th>
+        <th style="width:10%;">Nationality</th>
+        <th style="width:20%;">Residential Address</th>
+        <th style="width:14%;">Number of Shares Subscribed</th>
+        <th style="width:14%;">Amount Subscribed (Php)</th>
+        <th style="width:14%;">Amount Paid-up (Php)</th>
         <th>Mode of Payment</th>
       </tr>`;
     subRowsHtml = subscribers.map(s => `
@@ -1025,13 +1067,13 @@ function generateDocuments() {
   } else {
     subTableHead = `
       <tr>
-        <th>#</th>
-        <th>Name of Subscribers</th>
-        <th>Nationality</th>
-        <th>Residential Address</th>
-        <th>Number of Shares Subscribed</th>
-        <th>Amount Subscribed (in Php)</th>
-        <th>Amount of Paid-up (in Php)</th>
+        <th style="width:5%;">#</th>
+        <th style="width:25%;">Name of Subscribers</th>
+        <th style="width:12%;">Nationality</th>
+        <th style="width:24%;">Residential Address</th>
+        <th style="width:14%;">Number of Shares Subscribed</th>
+        <th style="width:10%;">Amount Subscribed (in Php)</th>
+        <th style="width:10%;">Amount of Paid-up (in Php)</th>
       </tr>`;
     subRowsHtml = subscribers.map(s => `
       <tr>
@@ -1068,13 +1110,11 @@ function generateDocuments() {
     </tr>`;
   }
 
-  // Lookup actual ID from directors if name matches
   const findDirectorId = (officerName) => {
     const found = directors.find(d => d.name && d.name.trim().toUpperCase() === officerName.trim().toUpperCase());
     return found ? found.id : '';
   };
 
-  // Deduplicate Notary Jurat Affiants for Unified Certification without placeholder phrases
   const rawUnifiedAffiants = [
     ...directors.map(d => ({ name: d.name, tin: d.tin, id: d.id })),
     { name: secName, tin: secTIN, id: findDirectorId(secName) },
@@ -1098,8 +1138,8 @@ function generateDocuments() {
       ${execCity} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;) S.S.
     </div>
 
-    <!-- MAIN TITLE DECREASED TO SIZE 12 -->
-    <div class="unified-main-title">
+    <!-- TITLE EXACTLY 12PT -->
+    <div class="doc-main-title">
       UNIFIED CERTIFICATION FOR INCREASE IN AUTHORIZED CAPITAL STOCK OF<br>
       ${corpName}
     </div>
@@ -1128,10 +1168,10 @@ function generateDocuments() {
       <thead>
         <tr>
           <th>Name and Nationality</th>
-          <th>Class of Shares</th>
-          <th>No. of Shares</th>
-          <th>Amount Subscribed (at par/stated value)</th>
-          <th>Amount Paid-up (at par/stated value)</th>
+          <th style="width:18%;">Class of Shares</th>
+          <th style="width:18%;">No. of Shares</th>
+          <th style="width:20%;">Amount Subscribed (at par/stated value)</th>
+          <th style="width:20%;">Amount Paid-up (at par/stated value)</th>
         </tr>
       </thead>
       <tbody>
@@ -1255,8 +1295,8 @@ function generateDocuments() {
       <table class="doc-table" style="width:85%; margin:10px auto;">
         <thead>
           <tr>
-            <th>Name</th>
-            <th>Competent Evidence of Identity</th>
+            <th style="width:50%;">Name</th>
+            <th style="width:50%;">Competent Evidence of Identity</th>
           </tr>
         </thead>
         <tbody>
@@ -1283,7 +1323,8 @@ function generateDocuments() {
       ${execCity} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;) S.S.
     </div>
 
-    <h2>TREASURER’S AFFIDAVIT</h2>
+    <!-- TITLE EXACTLY 12PT -->
+    <div class="doc-main-title">TREASURER’S AFFIDAVIT</div>
     <br>
     <p style="text-indent: 40px; text-align: justify;">
       I, <b>${treasName}</b>, after being sworn, deposes and says:
@@ -1331,7 +1372,6 @@ function generateDocuments() {
       ];
       const uniqueSubAffiants = deduplicateSignatories(rawSubAffiants);
 
-      // Clean 2-column table: Name | Competent Evidence of Identity (incorporating TIN)
       const subAffiantsHtml = uniqueSubAffiants.map(a => `
         <tr>
           <td>${a.name}</td>
@@ -1342,7 +1382,8 @@ function generateDocuments() {
       outputHtml += `
       <!-- Subscription Contract: Terms Page -->
       <div class="doc-page">
-        <h2>SUBSCRIPTION CONTRACT</h2>
+        <!-- TITLE EXACTLY 12PT -->
+        <div class="doc-main-title">SUBSCRIPTION CONTRACT</div>
         <br>
         <p><b>KNOW ALL PERSONS BY THESE PRESENTS:</b></p>
         <p style="text-indent: 40px; text-align: justify;">
@@ -1374,8 +1415,8 @@ function generateDocuments() {
         <table class="doc-table" style="width:85%; margin:15px auto;">
           <thead>
             <tr>
-              <th>NO. OF SHARES</th>
-              <th>SUBSCRIPTION PRICE</th>
+              <th style="width:50%;">NO. OF SHARES</th>
+              <th style="width:50%;">SUBSCRIPTION PRICE</th>
             </tr>
           </thead>
           <tbody>
@@ -1436,7 +1477,7 @@ function generateDocuments() {
             BEFORE ME, a Notary Public in and for ${execCity}, Philippines, this _____ day of _______________ ${execYear}, personally appeared:
           </p>
           
-          <!-- 2-COLUMN TABLE: NAME & COMPETENT EVIDENCE OF IDENTITY -->
+          <!-- 2-COLUMN TABLE FOR COMPETENT EVIDENCE -->
           <table class="doc-table" style="width:85%; margin:15px auto;">
             <thead>
               <tr>
@@ -1487,7 +1528,8 @@ function generateDocuments() {
       outputHtml += `
       <!-- Deed of Assignment: Terms Page -->
       <div class="doc-page">
-        <h2>DEED OF ASSIGNMENT</h2>
+        <!-- TITLE EXACTLY 12PT -->
+        <div class="doc-main-title">DEED OF ASSIGNMENT</div>
         <br>
         <p><b>KNOW ALL MEN BY THESE PRESENTS:</b></p>
         <p style="text-indent: 40px; text-align: justify;">
@@ -1564,8 +1606,8 @@ function generateDocuments() {
           <table class="doc-table" style="width:85%; margin:10px auto;">
             <thead>
               <tr>
-                <th>Name</th>
-                <th>Competent Evidence of Identity</th>
+                <th style="width:50%;">Name</th>
+                <th style="width:50%;">Competent Evidence of Identity</th>
               </tr>
             </thead>
             <tbody>
@@ -1632,17 +1674,12 @@ function downloadWordDoc() {
           font-size: 11pt;
           line-height: 1.35;
         }
-        h2, h3 {
-          text-align: center;
-          text-transform: uppercase;
-          margin: 4pt 0;
-        }
-        .unified-main-title {
+        .doc-main-title {
           font-size: 12pt !important;
           text-align: center !important;
           font-weight: bold;
           text-transform: uppercase;
-          margin: 4pt 0;
+          margin: 4pt 0 12pt 0;
         }
         .unified-section-title {
           font-size: 11pt !important;
