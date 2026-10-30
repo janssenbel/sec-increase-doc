@@ -307,7 +307,6 @@
         </div>
         <div>
           <label>Date of Execution (optional)</label>
-          <!-- NOT REQUIRED: Leaves space when empty -->
           <input type="date" id="execDate">
         </div>
       </div>
@@ -378,12 +377,12 @@
       <h2>4. Meetings & Statutory Compliance Boxes</h2>
       <div class="grid">
         <div>
-          <label>Stockholders' Meeting Date</label>
-          <input type="date" id="shMeetingDate" required>
+          <label>Stockholders' Meeting Date (optional)</label>
+          <input type="date" id="shMeetingDate">
         </div>
         <div>
-          <label>Board of Directors Meeting Date</label>
-          <input type="date" id="bodMeetingDate" required>
+          <label>Board of Directors Meeting Date (optional)</label>
+          <input type="date" id="bodMeetingDate">
         </div>
         <div>
           <label>Meeting Format</label>
@@ -526,6 +525,23 @@
 </div>
 
 <script>
+// --- Safe Date Parser (Eliminates NaN & Invalid Date) ---
+function parseDateSafe(dateVal) {
+  if (!dateVal || typeof dateVal !== 'string') return null;
+  const parts = dateVal.trim().split('-');
+  if (parts.length === 3) {
+    const y = parseInt(parts[0], 10);
+    const m = parseInt(parts[1], 10) - 1;
+    const d = parseInt(parts[2], 10);
+    if (!isNaN(y) && !isNaN(m) && !isNaN(d)) {
+      const dateObj = new Date(y, m, d);
+      if (!isNaN(dateObj.getTime())) return dateObj;
+    }
+  }
+  const parsed = new Date(dateVal);
+  return isNaN(parsed.getTime()) ? null : parsed;
+}
+
 // --- Utility: Number to Words (Philippine Legal Format) ---
 function numberToWords(num) {
   if (num === 0 || isNaN(num)) return "ZERO";
@@ -567,7 +583,7 @@ function fmtNum(n) {
   return (n || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-// Helper: Formats Competent Evidence of Identity string, stripping out any placeholder words
+// Helper: Formats Competent Evidence of Identity string
 function formatCompetentEvidence(person) {
   const tin = (person.tin || '').trim();
   let id = (person.id || '').trim();
@@ -729,10 +745,6 @@ document.getElementById('oldShares').addEventListener('input', updateStats);
 document.getElementById('newShares').addEventListener('input', updateStats);
 
 window.onload = function() {
-  document.getElementById('execDate').value = '2026-10-30';
-  document.getElementById('shMeetingDate').value = '2026-10-15';
-  document.getElementById('bodMeetingDate').value = '2026-10-15';
-
   addCurrentStockRow('JUAN DELA CRUZ', 'Filipino', 'Common', 5000, 500000, 500000);
   addCurrentStockRow('MARIA SANTOS', 'Filipino', 'Common', 5000, 500000, 500000);
 
@@ -760,7 +772,7 @@ function toggleBox(el) {
 // --- JSON BACKUP & IMPORT FEATURE ---
 function exportJSON() {
   const data = {
-    version: '2.0',
+    version: '2.1',
     corpName: document.getElementById('corpName').value,
     formerCorpName: document.getElementById('formerCorpName').value,
     principalAddress: document.getElementById('principalAddress').value,
@@ -918,26 +930,37 @@ function generateDocuments() {
   const subVenueCity = hasCity ? `City of ${rawCity} ) S.S.` : `City of ____________________ ) S.S.`;
   const deedVenueCity = hasCity ? `${cityInlineUpper} ] S.S.` : `_________________________ ] S.S.`;
 
-  // READ DATE OF EXECUTION: When empty, provide clean legal spaces/underlines
-  const execDateInput = document.getElementById('execDate').value;
-  const hasExecDate = !!execDateInput && !isNaN(new Date(execDateInput).getTime());
+  // READ DATES SAFELY (Completely eliminates NaN and Invalid Date)
+  const execD = parseDateSafe(document.getElementById('execDate').value);
+  const hasExecDate = !!execD;
 
-  let execDay = '______';
-  let execMonth = '_________________';
-  let execMonthYear = '_________________';
-  let execYear = '20_____';
-  let execYearDocket = '________';
-  let execDeedOpeningDate = '_____________';
+  const execDay = hasExecDate ? execD.getDate() : '______';
+  const execMonth = hasExecDate ? execD.toLocaleString('default', { month: 'long' }) : '_________________';
+  const execMonthYear = hasExecDate ? execD.toLocaleString('default', { month: 'long', year: 'numeric' }) : '_________________';
+  const execYear = hasExecDate ? execD.getFullYear() : '20____';
+  const execYearDocket = hasExecDate ? execD.getFullYear() : '________';
 
-  if (hasExecDate) {
-    const d = new Date(execDateInput);
-    execDay = d.getDate();
-    execMonth = d.toLocaleString('default', { month: 'long' });
-    execMonthYear = d.toLocaleString('default', { month: 'long', year: 'numeric' });
-    execYear = d.getFullYear();
-    execYearDocket = d.getFullYear();
-    execDeedOpeningDate = `${execDay} day of ${execMonthYear}`;
-  }
+  const execSigningPhrase = hasExecDate 
+    ? `this ${execDay} day of ${execMonthYear}` 
+    : `this ______ day of _________________ 20_____`;
+
+  const juratDatePhrase = hasExecDate 
+    ? `this ${execDay} day of ${execMonth}, ${execYear}` 
+    : `this _____ day of _______________ 20____`;
+
+  const deedOpeningPhrase = hasExecDate 
+    ? `${execDay} day of ${execMonthYear}` 
+    : `________________________`;
+
+  const shD = parseDateSafe(document.getElementById('shMeetingDate').value);
+  const shMeetingDate = shD 
+    ? shD.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) 
+    : '________________________';
+
+  const bodD = parseDateSafe(document.getElementById('bodMeetingDate').value);
+  const bodMeetingDate = bodD 
+    ? bodD.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) 
+    : '________________________';
 
   const par = parseFloat(document.getElementById('parValue').value) || 0;
   const oldShares = parseFloat(document.getElementById('oldShares').value) || 0;
@@ -947,8 +970,6 @@ function generateDocuments() {
   const newAcs = newShares * par;
   const increase = newAcs - oldAcs;
 
-  const shMeetingDate = new Date(document.getElementById('shMeetingDate').value).toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
-  const bodMeetingDate = new Date(document.getElementById('bodMeetingDate').value).toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
   const meetingFormat = document.getElementById('meetingFormat').value;
   const amendedArticle = document.getElementById('amendedArticle').value;
 
@@ -1189,7 +1210,6 @@ function generateDocuments() {
       ${unifiedVenueCity}
     </div>
 
-    <!-- TITLE EXACTLY 12PT -->
     <div class="doc-main-title">
       UNIFIED CERTIFICATION FOR INCREASE IN AUTHORIZED CAPITAL STOCK OF<br>
       ${corpName}
@@ -1200,7 +1220,6 @@ function generateDocuments() {
       We, the undersigned majority of the Board of Directors, the Corporate Secretary, the Chairperson, and the Secretary of the stockholders’ meeting of <b>${corpName}</b> (“Corporation”), a corporation duly organized and existing under the laws of the Republic of the Philippines, with principal office address at ${address}, do hereby certify:
     </p>
 
-    <!-- SECTION I: LEFT ALIGNED, SIZE 11 -->
     <div class="unified-section-title">I. Approval and Details for the Increase of Authorized Capital Stock</div>
     
     <p style="text-indent: 40px; text-align: justify; margin: 4px 0;">
@@ -1260,7 +1279,6 @@ function generateDocuments() {
       5. That no bonded indebtedness has been incurred, created, or increased as of the date of the meeting; and
     </p>
     
-    <!-- ITEM 6 KEPT TOGETHER -->
     <div class="keep-together" style="margin-top: 4px;">
       <p style="text-align: justify; margin-bottom: 4px;">
         6. That the requirements of:
@@ -1281,7 +1299,6 @@ function generateDocuments() {
       </div>
     </div>
 
-    <!-- SECTION II KEPT TOGETHER -->
     <div class="keep-together">
       <div class="unified-section-title">II. Approval and Details for the Amended Articles of Incorporation</div>
       <p style="text-indent: 40px; text-align: justify; margin: 4px 0;">
@@ -1292,7 +1309,6 @@ function generateDocuments() {
       </p>
     </div>
 
-    <!-- SECTION III KEPT TOGETHER -->
     <div class="keep-together">
       <div class="unified-section-title">III. No Intra-Corporate Dispute (with Undertaking)</div>
       <p style="text-indent: 40px; text-align: justify; margin: 4px 0;">
@@ -1303,7 +1319,6 @@ function generateDocuments() {
       </p>
     </div>
 
-    <!-- SECTION IV KEPT TOGETHER -->
     <div class="keep-together">
       <div class="unified-section-title">IV. Waiver of Preemptive Rights</div>
       <p style="text-indent: 40px; text-align: justify; margin: 4px 0;">
@@ -1315,7 +1330,7 @@ function generateDocuments() {
   <!-- ================= UNIFIED CERTIFICATION: DEDICATED SIGNATURE & JURAT PAGE ================= -->
   <div class="doc-page">
     <p style="text-indent: 40px; margin-top: 15px;">
-      IN WITNESS WHEREOF, we have hereunto signed this certificate this ${hasExecDate ? execDay + ' day of ' + execMonthYear : '______ day of _________________'} at ${cityInline}, Philippines.
+      IN WITNESS WHEREOF, we have hereunto signed this certificate ${execSigningPhrase} at ${cityInline}, Philippines.
     </p>
 
     <table style="width:100%; border:none; margin-top:15px;">
@@ -1347,10 +1362,9 @@ function generateDocuments() {
     <br><br>
     <div style="border-top: 1px dashed #666; padding-top: 15px;">
       <p style="text-indent: 40px; text-align: justify;">
-        SUBSCRIBED AND SWORN to before me this ${hasExecDate ? execDay + ' day of ' + execMonth : '_____ day of _______________'} ${execYear} in ${cityInline}, affiants exhibited to me their Competent Evidence of Identity:
+        SUBSCRIBED AND SWORN to before me ${juratDatePhrase} in ${cityInline}, affiants exhibited to me their Competent Evidence of Identity:
       </p>
       
-      <!-- COMPACT EVIDENCE OF IDENTITY TABLE (WIDTH 60%, 8.5PT) -->
       <table class="compact-id-table">
         <thead>
           <tr>
@@ -1363,7 +1377,6 @@ function generateDocuments() {
         </tbody>
       </table>
       
-      <!-- NOTARY PUBLIC RIGHT-ALIGNED, DOCKET LEFT-ALIGNED -->
       <div class="notary-title">NOTARY PUBLIC</div>
       <div class="notary-docket">
         Doc. No. &nbsp;______;<br>
@@ -1382,7 +1395,6 @@ function generateDocuments() {
       ${unifiedVenueCity}
     </div>
 
-    <!-- TITLE EXACTLY 12PT -->
     <div class="doc-main-title">TREASURER’S AFFIDAVIT</div>
     <br>
     <p style="text-indent: 40px; text-align: justify;">
@@ -1405,10 +1417,9 @@ function generateDocuments() {
 
     <br><br><br>
     <p>
-      SUBSCRIBED AND SWORN to before me this ${hasExecDate ? execDay + ' day of ' + execMonth : '___ day of _____________'}, affiant exhibiting to me her/his Competent Evidence of Identity / TIN: ${treasTIN}.
+      SUBSCRIBED AND SWORN to before me ${juratDatePhrase}, affiant exhibiting to me her/his Competent Evidence of Identity / TIN: ${treasTIN}.
     </p>
     
-    <!-- NOTARY PUBLIC RIGHT-ALIGNED, DOCKET LEFT-ALIGNED -->
     <div class="notary-title">NOTARY PUBLIC</div>
     <div class="notary-docket">
       Doc. No. &nbsp;______;<br>
@@ -1439,14 +1450,12 @@ function generateDocuments() {
       `).join('');
 
       outputHtml += `
-      <!-- Subscription Contract: Terms Page -->
       <div class="doc-page">
-        <!-- TITLE EXACTLY 12PT -->
         <div class="doc-main-title">SUBSCRIPTION CONTRACT</div>
         <br>
         <p><b>KNOW ALL PERSONS BY THESE PRESENTS:</b></p>
         <p style="text-indent: 40px; text-align: justify;">
-          This subscription contract is made and entered this ${hasExecDate ? execDay + ' day of ' + execMonthYear : '______ day of _________________ 20_____'}, ${cityInline}, Philippines, by and between:
+          This subscription contract is made and entered ${execSigningPhrase}, ${cityInline}, Philippines, by and between:
         </p>
         <p style="text-indent: 40px; text-align: justify;">
           <b>${corpName}</b>, a corporation organized and existing under the laws of the Philippines, with principal office address at ${address}, duly represented by its President, <b>${presName}</b>, of legal age, Filipino, and Treasurer, <b>${treasName}</b>, of legal age, Filipino (referred to here as, “the Corporation”);
@@ -1496,10 +1505,9 @@ function generateDocuments() {
         </p>
       </div>
 
-      <!-- Subscription Contract: SEPARATED SIGNATURE & ACKNOWLEDGMENT PAGE -->
       <div class="doc-page">
         <p style="text-indent: 40px; margin-top: 15px;">
-          IN WITNESS WHEREOF, we have hereunto set our hands this ${hasExecDate ? execDay + ' day of ' + execMonthYear : '_________ day of _________________, 20_____'} at ${cityInline}.
+          IN WITNESS WHEREOF, we have hereunto set our hands ${execSigningPhrase} at ${cityInline}.
         </p>
         <br><br>
         <table style="width:100%; border:none;">
@@ -1533,10 +1541,9 @@ function generateDocuments() {
           </div>
 
           <p style="text-indent:40px; text-align:justify;">
-            BEFORE ME, a Notary Public in and for ${hasCity ? cityInline : '____________________'}, Philippines, this ${hasExecDate ? execDay + ' day of ' + execMonth : '__________________ day of ________________'}, ${hasExecDate ? execYear : '20_____'}, personally appeared:
+            BEFORE ME, a Notary Public in and for ${hasCity ? cityInline : '____________________'}, Philippines, ${juratDatePhrase}, personally appeared:
           </p>
           
-          <!-- COMPACT EVIDENCE OF IDENTITY TABLE (WIDTH 60%, 8.5PT) -->
           <table class="compact-id-table">
             <thead>
               <tr>
@@ -1553,7 +1560,6 @@ function generateDocuments() {
             All known to me and to me known to be the same persons who executed the foregoing Subscription Contract and they acknowledged to me that the same is their free and voluntary act and deed.
           </p>
           
-          <!-- NOTARY PUBLIC RIGHT-ALIGNED, DOCKET LEFT-ALIGNED -->
           <div class="notary-title">NOTARY PUBLIC</div>
           <div class="notary-docket">
             Doc. No. &nbsp;______;<br>
@@ -1585,14 +1591,12 @@ function generateDocuments() {
       `).join('');
 
       outputHtml += `
-      <!-- Deed of Assignment: Terms Page -->
       <div class="doc-page">
-        <!-- TITLE EXACTLY 12PT -->
         <div class="doc-main-title">DEED OF ASSIGNMENT</div>
         <br>
         <p><b>KNOW ALL MEN BY THESE PRESENTS:</b></p>
         <p style="text-indent: 40px; text-align: justify;">
-          This Deed of Assignment made and executed on ${execDeedOpeningDate}, by and between:
+          This Deed of Assignment made and executed on ${deedOpeningPhrase}, by and between:
         </p>
         <p style="text-indent: 40px; text-align: justify;">
           <b>${sub.name}</b>, of legal age, ${sub.nat}, single and with postal address at ${sub.addr}, hereinafter referred to as the “<b>ASSIGNOR</b>”;
@@ -1619,10 +1623,9 @@ function generateDocuments() {
         </p>
       </div>
 
-      <!-- Deed of Assignment: SEPARATED SIGNATURE & ACKNOWLEDGMENT PAGE -->
       <div class="doc-page">
         <p style="text-indent: 40px; margin-top: 15px;">
-          IN WITNESS WHEREOF, the parties have caused this Deed to be signed in their respective names this ${hasExecDate ? execDay + ' day of ' + execMonthYear : '________________'} at ${cityInline}.
+          IN WITNESS WHEREOF, the parties have caused this Deed to be signed in their respective names ${execSigningPhrase} at ${cityInline}.
         </p>
         <br><br>
         <table style="width:100%; border:none;">
@@ -1660,10 +1663,9 @@ function generateDocuments() {
           </div>
 
           <p style="text-indent:40px; text-align:justify;">
-            BEFORE ME, a Notary Public for and in the above-named jurisdiction on this ${hasExecDate ? execDay + ' day of ' + execMonth : '_____ day of _______________'} ${hasExecDate ? execYear : '20____'}, personally appeared the following:
+            BEFORE ME, a Notary Public for and in the above-named jurisdiction on ${juratDatePhrase}, personally appeared the following:
           </p>
           
-          <!-- COMPACT EVIDENCE OF IDENTITY TABLE (WIDTH 60%, 8.5PT) -->
           <table class="compact-id-table">
             <thead>
               <tr>
@@ -1679,7 +1681,6 @@ function generateDocuments() {
             who are known to me and to me known to be the same persons who executed the foregoing Deed of Assignment, and acknowledged to me that the same is their free and voluntary act and deed and/or that of the entity they represent.
           </p>
           
-          <!-- NOTARY PUBLIC RIGHT-ALIGNED, DOCKET LEFT-ALIGNED -->
           <div class="notary-title">NOTARY PUBLIC</div>
           <div class="notary-docket">
             Doc. No. &nbsp;______;<br>
