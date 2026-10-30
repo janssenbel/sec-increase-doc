@@ -24,7 +24,7 @@
 
     /* Screen Form UI */
     .app-container {
-      max-width: 1100px;
+      max-width: 1200px;
       margin: 20px auto;
       padding: 0 16px;
     }
@@ -49,10 +49,10 @@
     label { font-size: 0.85rem; font-weight: 600; display: block; margin-bottom: 4px; }
     input, select, textarea {
       width: 100%;
-      padding: 8px 12px;
+      padding: 7px 10px;
       border: 1px solid var(--border);
       border-radius: 6px;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
     }
     input:focus, select:focus, textarea:focus {
       outline: 2px solid var(--primary);
@@ -81,18 +81,26 @@
     .btn-outline:hover {
       background: #eff6ff;
     }
+    .table-responsive {
+      overflow-x: auto;
+      margin-top: 12px;
+    }
     table.data-table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 12px;
     }
     table.data-table th, table.data-table td {
       border: 1px solid var(--border);
-      padding: 8px;
+      padding: 6px 8px;
       text-align: left;
       font-size: 0.85rem;
     }
     table.data-table th { background: #f1f5f9; }
+    table.data-table tfoot td {
+      font-weight: bold;
+      background: #f8fafc;
+      border-top: 2px solid var(--primary);
+    }
     .alert {
       padding: 12px;
       border-radius: 6px;
@@ -120,7 +128,6 @@
       box-decoration-break: clone;
     }
     
-    /* Main Document Titles: EXACTLY 12PT */
     .doc-main-title {
       font-size: 12pt !important;
       text-align: center !important;
@@ -130,7 +137,6 @@
       line-height: 1.3;
     }
 
-    /* Section Headings: EXACTLY 11PT & LEFT ALIGNED */
     .unified-section-title {
       font-size: 11pt !important;
       text-align: left !important;
@@ -140,7 +146,6 @@
       text-transform: none !important;
     }
 
-    /* Standard Table Formatting */
     .doc-table {
       width: 100%;
       border-collapse: collapse;
@@ -160,7 +165,6 @@
       background: #fbfbfb;
     }
 
-    /* REDUCED & COMPACT COMPETENT EVIDENCE TABLE */
     .compact-id-table {
       width: 60% !important;
       margin: 8px auto !important;
@@ -217,7 +221,7 @@
       break-inside: avoid !important;
     }
 
-    /* ================= STRICT PRINT & PDF RULES ================= */
+    /* Strict Print Rules: Clean PDF Without Browser Headers/Footers */
     @media print {
       @page {
         size: A4 portrait;
@@ -340,20 +344,22 @@
       <p style="font-size:0.85rem; color:#64748b;">
         Details of the capital stock as of the stockholders' meeting approving the increase (Section I, Item 3).
       </p>
-      <table class="data-table" id="currentStockTable">
-        <thead>
-          <tr>
-            <th>Stockholder Name</th>
-            <th width="120">Nationality</th>
-            <th width="110">Class of Shares</th>
-            <th>No. of Shares</th>
-            <th>Amount Subscribed (Php)</th>
-            <th>Amount Paid-up (Php)</th>
-            <th width="40"></th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+      <div class="table-responsive">
+        <table class="data-table" id="currentStockTable">
+          <thead>
+            <tr>
+              <th>Stockholder Name</th>
+              <th width="120">Nationality</th>
+              <th width="110">Class of Shares</th>
+              <th>No. of Shares</th>
+              <th>Amount Subscribed (Php)</th>
+              <th>Amount Paid-up (Php)</th>
+              <th width="40"></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
       <button type="button" class="btn btn-secondary" onclick="addCurrentStockRow()" style="margin-top: 8px;">+ Add Existing Stockholder</button>
       
       <div class="grid" style="margin-top: 15px;">
@@ -475,30 +481,46 @@
       <button type="button" class="btn btn-secondary" onclick="addBodRow()" style="margin-top: 8px;">+ Add Director</button>
     </div>
 
-    <!-- 6. Subscribers to the Increase -->
+    <!-- 6. Subscribers to the Increase with Live Totals & Dual Cash/Conversion Columns -->
     <div class="card">
       <h2>6. Subscriptions to the Increase</h2>
       <p style="font-size:0.85rem; color:#64748b;">
-        <b>Note:</b> If all subscribers pay in <b>Cash</b>, the "Mode of Payment" column is omitted from the table. If any subscriber pays via <b>Conversion</b>, the column will be automatically included.
+        Each row allows both <b>Cash Paid</b> and <b>Conversion</b> payments for the same shareholder. The footer displays live grand totals across all subscribers.
       </p>
 
-      <table class="data-table" id="subscribersTable">
-        <thead>
-          <tr>
-            <th>Subscriber Name</th>
-            <th width="120">TIN</th>
-            <th width="100">Nationality</th>
-            <th>Residential Address</th>
-            <th>Shares Subscribed</th>
-            <th>Price / Share</th>
-            <th>Amount Paid (Php)</th>
-            <th>Mode</th>
-            <th>ID / Evidence of Identity</th>
-            <th width="40"></th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+      <div class="table-responsive">
+        <table class="data-table" id="subscribersTable">
+          <thead>
+            <tr>
+              <th style="min-width: 140px;">Subscriber Name</th>
+              <th style="min-width: 110px;">TIN</th>
+              <th style="min-width: 80px;">Nationality</th>
+              <th style="min-width: 130px;">Residential Address</th>
+              <th style="min-width: 85px;">Shares Subscribed</th>
+              <th style="min-width: 75px;">Price / Share</th>
+              <th style="min-width: 105px;">Amount Subscribed</th>
+              <th style="min-width: 105px; background: #e0f2fe;">Cash Paid (Php)</th>
+              <th style="min-width: 105px; background: #fef3c7;">Conversion (Php)</th>
+              <th style="min-width: 105px;">Total Paid (Php)</th>
+              <th style="min-width: 130px;">ID / Evidence of Identity</th>
+              <th width="35"></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+          <tfoot>
+            <tr>
+              <td colspan="4" style="text-align: right; font-weight: bold; color: var(--primary);">INTERFACE TOTAL:</td>
+              <td id="uiTotShares" style="text-align: right;">0</td>
+              <td>-</td>
+              <td id="uiTotSub" style="text-align: right;">0.00</td>
+              <td id="uiTotCash" style="text-align: right; background: #e0f2fe;">0.00</td>
+              <td id="uiTotConv" style="text-align: right; background: #fef3c7;">0.00</td>
+              <td id="uiTotPaid" style="text-align: right;">0.00</td>
+              <td colspan="2"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
       <button type="button" class="btn btn-secondary" onclick="addSubscriberRow()" style="margin-top: 8px;">+ Add Subscriber</button>
     </div>
 
@@ -674,9 +696,13 @@ function addBodRow(name = '', tin = '', idProof = '') {
   tbody.appendChild(tr);
 }
 
-function addSubscriberRow(name = '', tin = '', nat = 'Filipino', addr = '', shares = 1000, price = 100, paid = 100000, mode = 'Cash', idProof = '') {
+// --- Dynamic Row Handlers: Subscribers (Unified Cash and Conversion Columns) ---
+function addSubscriberRow(name = '', tin = '', nat = 'Filipino', addr = '', shares = 1000, price = 100, cashPaid = 100000, convPaid = 0, idProof = '') {
   const tbody = document.querySelector('#subscribersTable tbody');
   const tr = document.createElement('tr');
+  const amountSub = (shares * price).toFixed(2);
+  const totalPaid = (parseFloat(cashPaid || 0) + parseFloat(convPaid || 0)).toFixed(2);
+
   tr.innerHTML = `
     <td><input type="text" class="sub-name" value="${name}" placeholder="Subscriber Name" required></td>
     <td><input type="text" class="sub-tin" value="${tin}" placeholder="TIN"></td>
@@ -684,13 +710,10 @@ function addSubscriberRow(name = '', tin = '', nat = 'Filipino', addr = '', shar
     <td><input type="text" class="sub-addr" value="${addr}" placeholder="Address"></td>
     <td><input type="number" class="sub-shares" value="${shares}" oninput="recalcSubRow(this)" required></td>
     <td><input type="number" class="sub-price" value="${price}" step="0.01" oninput="recalcSubRow(this)" required></td>
-    <td><input type="number" class="sub-paid" value="${paid}" step="0.01" required></td>
-    <td>
-      <select class="sub-mode">
-        <option value="Cash" ${mode === 'Cash' ? 'selected' : ''}>Cash</option>
-        <option value="Conversion" ${mode === 'Conversion' ? 'selected' : ''}>Conversion of Deposits/Advances</option>
-      </select>
-    </td>
+    <td><input type="number" class="sub-amount" value="${amountSub}" step="0.01" readonly style="background:#f8fafc; font-weight:600;"></td>
+    <td><input type="number" class="sub-cash" value="${cashPaid}" step="0.01" oninput="recalcSubRow(this)" style="background:#eff6ff;" placeholder="0.00"></td>
+    <td><input type="number" class="sub-conv" value="${convPaid}" step="0.01" oninput="recalcSubRow(this)" style="background:#fffbeb;" placeholder="0.00"></td>
+    <td><input type="number" class="sub-paid" value="${totalPaid}" step="0.01" readonly style="background:#f8fafc; font-weight:600;"></td>
     <td><input type="text" class="sub-id" value="${idProof}" placeholder="ID Details"></td>
     <td><button type="button" class="btn btn-danger" onclick="this.closest('tr').remove(); updateStats();">X</button></td>
   `;
@@ -702,11 +725,25 @@ function recalcSubRow(el) {
   const row = el.closest('tr');
   const shares = parseFloat(row.querySelector('.sub-shares').value) || 0;
   const price = parseFloat(row.querySelector('.sub-price').value) || 0;
-  const paidInput = row.querySelector('.sub-paid');
-  paidInput.value = (shares * price).toFixed(2);
+  const amountSubInput = row.querySelector('.sub-amount');
+  const cashInput = row.querySelector('.sub-cash');
+  const convInput = row.querySelector('.sub-conv');
+  const totalPaidInput = row.querySelector('.sub-paid');
+
+  const computedSub = shares * price;
+  amountSubInput.value = computedSub.toFixed(2);
+
+  // If user just edited shares/price and both payments are zero, default cash to full amount
+  let cash = parseFloat(cashInput.value);
+  let conv = parseFloat(convInput.value);
+  if (isNaN(cash)) cash = 0;
+  if (isNaN(conv)) conv = 0;
+
+  totalPaidInput.value = (cash + conv).toFixed(2);
   updateStats();
 }
 
+// Live calculation of totals on the Section 6 interface and the compliance bar
 function updateStats() {
   const par = parseFloat(document.getElementById('parValue').value) || 0;
   const oldShares = parseFloat(document.getElementById('oldShares').value) || 0;
@@ -716,15 +753,40 @@ function updateStats() {
   const newAcs = newShares * par;
   const increase = newAcs - oldAcs;
 
+  let totShares = 0;
   let totSub = 0;
+  let totCash = 0;
+  let totConv = 0;
   let totPaid = 0;
+
   document.querySelectorAll('#subscribersTable tbody tr').forEach(tr => {
     const s = parseFloat(tr.querySelector('.sub-shares').value) || 0;
     const p = parseFloat(tr.querySelector('.sub-price').value) || 0;
-    const pd = parseFloat(tr.querySelector('.sub-paid').value) || 0;
-    totSub += (s * p);
-    totPaid += pd;
+    const c = parseFloat(tr.querySelector('.sub-cash').value) || 0;
+    const v = parseFloat(tr.querySelector('.sub-conv').value) || 0;
+
+    const sub = s * p;
+    const paid = c + v;
+
+    totShares += s;
+    totSub += sub;
+    totCash += c;
+    totConv += v;
+    totPaid += paid;
   });
+
+  // Update Section 6 Live Interface Total
+  const uiTotShares = document.getElementById('uiTotShares');
+  const uiTotSub = document.getElementById('uiTotSub');
+  const uiTotCash = document.getElementById('uiTotCash');
+  const uiTotConv = document.getElementById('uiTotConv');
+  const uiTotPaid = document.getElementById('uiTotPaid');
+
+  if (uiTotShares) uiTotShares.textContent = totShares.toLocaleString();
+  if (uiTotSub) uiTotSub.textContent = fmtNum(totSub);
+  if (uiTotCash) uiTotCash.textContent = fmtNum(totCash);
+  if (uiTotConv) uiTotConv.textContent = fmtNum(totConv);
+  if (uiTotPaid) uiTotPaid.textContent = fmtNum(totPaid);
 
   const reqSub = increase * 0.25;
   const reqPaid = totSub * 0.25;
@@ -733,11 +795,13 @@ function updateStats() {
   const validPaid = totPaid >= reqPaid;
 
   const statsDiv = document.getElementById('capitalStats');
-  statsDiv.innerHTML = `
-    <b>Capital Increase:</b> Php ${fmtNum(increase)} | 
-    <b>25% Required Subscribed:</b> Php ${fmtNum(reqSub)} (Current: <span style="color:${validSub ? 'green' : 'red'}">Php ${fmtNum(totSub)}</span>) | 
-    <b>25% Required Paid:</b> Php ${fmtNum(reqPaid)} (Current: <span style="color:${validPaid ? 'green' : 'red'}">Php ${fmtNum(totPaid)}</span>)
-  `;
+  if (statsDiv) {
+    statsDiv.innerHTML = `
+      <b>Capital Increase:</b> Php ${fmtNum(increase)} | 
+      <b>25% Required Subscribed:</b> Php ${fmtNum(reqSub)} (Current: <span style="color:${validSub ? 'green' : 'red'}; font-weight:bold;">Php ${fmtNum(totSub)}</span>) | 
+      <b>25% Required Paid:</b> Php ${fmtNum(reqPaid)} (Current: <span style="color:${validPaid ? 'green' : 'red'}; font-weight:bold;">Php ${fmtNum(totPaid)}</span>)
+    `;
+  }
 }
 
 document.getElementById('parValue').addEventListener('input', updateStats);
@@ -752,8 +816,10 @@ window.onload = function() {
   addBodRow('MARIA SANTOS', '234-567-890-000', 'Driver\'s License N01-12-345678');
   addBodRow('PEDRO PENDUKO', '345-678-901-000', 'UMID 0011-2233445-6');
 
-  addSubscriberRow('JUAN DELA CRUZ', '123-456-789-000', 'Filipino', '123 Pine St., Makati City', 10000, 100, 1000000, 'Cash', 'Passport P1234567B');
-  addSubscriberRow('MARIA SANTOS', '234-567-890-000', 'Filipino', '456 Oak St., Taguig City', 5000, 100, 500000, 'Conversion', 'Driver\'s License N01-12-345678');
+  // Sample row 1: Pure Cash
+  addSubscriberRow('JUAN DELA CRUZ', '123-456-789-000', 'Filipino', '123 Pine St., Makati City', 10000, 100, 1000000, 0, 'Passport P1234567B');
+  // Sample row 2: Both Cash and Conversion in the same row
+  addSubscriberRow('MARIA SANTOS', '234-567-890-000', 'Filipino', '456 Oak St., Taguig City', 5000, 100, 200000, 300000, 'Driver\'s License N01-12-345678');
 };
 
 function backToForm() {
@@ -772,7 +838,7 @@ function toggleBox(el) {
 // --- JSON BACKUP & IMPORT FEATURE ---
 function exportJSON() {
   const data = {
-    version: '2.1',
+    version: '2.2',
     corpName: document.getElementById('corpName').value,
     formerCorpName: document.getElementById('formerCorpName').value,
     principalAddress: document.getElementById('principalAddress').value,
@@ -832,8 +898,8 @@ function exportJSON() {
       addr: tr.querySelector('.sub-addr').value,
       shares: tr.querySelector('.sub-shares').value,
       price: tr.querySelector('.sub-price').value,
-      paid: tr.querySelector('.sub-paid').value,
-      mode: tr.querySelector('.sub-mode').value,
+      cashPaid: tr.querySelector('.sub-cash').value,
+      convPaid: tr.querySelector('.sub-conv').value,
       id: tr.querySelector('.sub-id').value
     });
   });
@@ -898,9 +964,23 @@ function importJSON(event) {
         data.directors.forEach(d => addBodRow(d.name, d.tin, d.id));
       }
 
-      document.querySelector('#subscribersTable tbody tr').innerHTML = '';
+      document.querySelector('#subscribersTable tbody').innerHTML = '';
       if (Array.isArray(data.subscribers)) {
-        data.subscribers.forEach(s => addSubscriberRow(s.name, s.tin || '', s.nat, s.addr, s.shares, s.price, s.paid, s.mode, s.id));
+        data.subscribers.forEach(s => {
+          let c = s.cashPaid;
+          let v = s.convPaid;
+          // Compatibility with earlier JSON schemas that used paid & mode
+          if (c === undefined && v === undefined) {
+            if (s.mode === 'Conversion') {
+              v = s.paid || 0;
+              c = 0;
+            } else {
+              c = s.paid || 0;
+              v = 0;
+            }
+          }
+          addSubscriberRow(s.name, s.tin || '', s.nat, s.addr, s.shares, s.price, c || 0, v || 0, s.id);
+        });
       }
 
       updateStats();
@@ -920,7 +1000,6 @@ function generateDocuments() {
   const formerCorpName = document.getElementById('formerCorpName').value.trim();
   const address = document.getElementById('principalAddress').value;
 
-  // READ CITY OF EXECUTION: When empty, provide clean legal space
   const rawCity = document.getElementById('execCity').value.trim();
   const hasCity = rawCity.length > 0;
   const cityInline = hasCity ? rawCity : '________________________';
@@ -930,7 +1009,6 @@ function generateDocuments() {
   const subVenueCity = hasCity ? `City of ${rawCity} ) S.S.` : `City of ____________________ ) S.S.`;
   const deedVenueCity = hasCity ? `${cityInlineUpper} ] S.S.` : `_________________________ ] S.S.`;
 
-  // READ DATES SAFELY (Completely eliminates NaN and Invalid Date)
   const execD = parseDateSafe(document.getElementById('execDate').value);
   const hasExecDate = !!execD;
 
@@ -1023,12 +1101,12 @@ function generateDocuments() {
     });
   });
 
-  // Read Subscribers
+  // Read Subscribers (Dual Cash & Conversion in Same Row)
   const subscribers = [];
   let totalSubscribed = 0;
   let totalPaid = 0;
-  let cashTotalPaid = 0;
-  let convTotalPaid = 0;
+  let cashGrandTotal = 0;
+  let convGrandTotal = 0;
   let hasNonCash = false;
 
   document.querySelectorAll('#subscribersTable tbody tr').forEach((tr, idx) => {
@@ -1038,18 +1116,18 @@ function generateDocuments() {
     const addr = tr.querySelector('.sub-addr').value;
     const sQty = parseFloat(tr.querySelector('.sub-shares').value) || 0;
     const sPrice = parseFloat(tr.querySelector('.sub-price').value) || 0;
-    const sPaid = parseFloat(tr.querySelector('.sub-paid').value) || 0;
-    const sMode = tr.querySelector('.sub-mode').value;
+    const sCash = parseFloat(tr.querySelector('.sub-cash').value) || 0;
+    const sConv = parseFloat(tr.querySelector('.sub-conv').value) || 0;
     const sId = tr.querySelector('.sub-id').value;
     const subTotal = sQty * sPrice;
+    const sPaid = sCash + sConv;
 
-    if (sMode !== 'Cash') {
+    if (sConv > 0) {
       hasNonCash = true;
-      convTotalPaid += sPaid;
-    } else {
-      cashTotalPaid += sPaid;
     }
 
+    cashGrandTotal += sCash;
+    convGrandTotal += sConv;
     totalSubscribed += subTotal;
     totalPaid += sPaid;
 
@@ -1062,21 +1140,19 @@ function generateDocuments() {
       shares: sQty,
       price: sPrice,
       amount: subTotal,
+      cashPaid: sCash,
+      convPaid: sConv,
       paid: sPaid,
-      mode: sMode,
       id: sId
     });
   });
 
-  const cashSubscribers = subscribers.filter(s => s.mode === 'Cash');
-  const convSubscribers = subscribers.filter(s => s.mode === 'Conversion');
-
   // Determine Treasurer's Consideration Clause
   let finalTreasPaymentMode = selectedTreasMode;
   if (selectedTreasMode === 'auto') {
-    if (cashSubscribers.length > 0 && convSubscribers.length > 0) {
-      finalTreasPaymentMode = `partly in cash (Php ${fmtNum(cashTotalPaid)}) and partly via conversion of liabilities to equity (Php ${fmtNum(convTotalPaid)})`;
-    } else if (convSubscribers.length > 0) {
+    if (cashGrandTotal > 0 && convGrandTotal > 0) {
+      finalTreasPaymentMode = `partly in cash (Php ${fmtNum(cashGrandTotal)}) and partly via conversion of liabilities to equity (Php ${fmtNum(convGrandTotal)})`;
+    } else if (convGrandTotal > 0) {
       finalTreasPaymentMode = 'via conversion of liabilities to equity';
     } else {
       finalTreasPaymentMode = 'in cash';
@@ -1108,23 +1184,32 @@ function generateDocuments() {
     `;
   }
 
-  // Render Subscriptions Table
+  // Render Subscriptions Table in Unified Certification
   let subTableHead = '';
   let subRowsHtml = '';
 
   if (hasNonCash) {
     subTableHead = `
       <tr>
-        <th style="width:5%;">#</th>
-        <th style="width:23%;">Name of Subscribers</th>
-        <th style="width:10%;">Nationality</th>
-        <th style="width:20%;">Residential Address</th>
-        <th style="width:14%;">Number of Shares Subscribed</th>
-        <th style="width:14%;">Amount Subscribed (Php)</th>
-        <th style="width:14%;">Amount Paid-up (Php)</th>
-        <th>Mode of Payment</th>
+        <th style="width:4%;">#</th>
+        <th style="width:20%;">Name of Subscribers</th>
+        <th style="width:9%;">Nationality</th>
+        <th style="width:18%;">Residential Address</th>
+        <th style="width:13%;">Number of Shares Subscribed</th>
+        <th style="width:12%;">Amount Subscribed (Php)</th>
+        <th style="width:12%;">Amount Paid-up (Php)</th>
+        <th style="width:12%;">Mode of Payment</th>
       </tr>`;
-    subRowsHtml = subscribers.map(s => `
+    subRowsHtml = subscribers.map(s => {
+      let modeText = '';
+      if (s.cashPaid > 0 && s.convPaid > 0) {
+        modeText = `Cash: Php ${fmtNum(s.cashPaid)}<br>Conversion: Php ${fmtNum(s.convPaid)}`;
+      } else if (s.convPaid > 0) {
+        modeText = 'Conversion of Liabilities';
+      } else {
+        modeText = 'Cash';
+      }
+      return `
       <tr>
         <td style="text-align:center;">${s.item}</td>
         <td>${s.name}</td>
@@ -1133,10 +1218,11 @@ function generateDocuments() {
         <td style="text-align:right;">${s.shares.toLocaleString()} Common</td>
         <td style="text-align:right;">${fmtNum(s.amount)}</td>
         <td style="text-align:right;">${fmtNum(s.paid)}</td>
-        <td>${s.mode === 'Cash' ? 'Cash' : 'Conversion of Liabilities'}</td>
-      </tr>
-    `).join('');
+        <td style="font-size:8.5pt;">${modeText}</td>
+      </tr>`;
+    }).join('');
   } else {
+    // Mode of Payment column REMOVED if all are 100% Cash
     subTableHead = `
       <tr>
         <th style="width:5%;">#</th>
@@ -1202,7 +1288,7 @@ function generateDocuments() {
     </tr>
   `).join('');
 
-  // ================= 1. UNIFIED CERTIFICATION - BODY PAGE =================
+  // ================= 1. UNIFIED CERTIFICATION =================
   outputHtml += `
   <div class="doc-page">
     <div class="venue-block">
@@ -1327,7 +1413,7 @@ function generateDocuments() {
     </div>
   </div>
 
-  <!-- ================= UNIFIED CERTIFICATION: DEDICATED SIGNATURE & JURAT PAGE ================= -->
+  <!-- Unified Certification: Dedicated Signatures & Jurat Page -->
   <div class="doc-page">
     <p style="text-indent: 40px; margin-top: 15px;">
       IN WITNESS WHEREOF, we have hereunto signed this certificate ${execSigningPhrase} at ${cityInline}, Philippines.
@@ -1387,7 +1473,7 @@ function generateDocuments() {
     </div>
   </div>`;
 
-  // ================= 2. EXACTLY ONE CONSOLIDATED TREASURER'S AFFIDAVIT SHOWING THE TOTAL =================
+  // ================= 2. TREASURER'S AFFIDAVIT =================
   outputHtml += `
   <div class="doc-page">
     <div class="venue-block">
@@ -1429,7 +1515,8 @@ function generateDocuments() {
     </div>
   </div>`;
 
-  // ================= 3. SUBSCRIPTION CONTRACT (FOR CASH) =================
+  // ================= 3. SUBSCRIPTION CONTRACTS (FOR SUBSCRIBERS WITH CASH > 0) =================
+  const cashSubscribers = subscribers.filter(s => s.cashPaid > 0);
   if (cashSubscribers.length > 0) {
     cashSubscribers.forEach(sub => {
       const presDirectorId = findDirectorId(presName);
@@ -1448,6 +1535,10 @@ function generateDocuments() {
           <td>${formatCompetentEvidence(a)}</td>
         </tr>
       `).join('');
+
+      // If subscriber paid purely in cash, full shares; if partly, prorate shares for the cash contract
+      const cashShares = sub.convPaid === 0 ? sub.shares : (sub.price > 0 ? Math.round(sub.cashPaid / sub.price) : 0);
+      const cashSubPrice = sub.convPaid === 0 ? sub.amount : sub.cashPaid;
 
       outputHtml += `
       <div class="doc-page">
@@ -1489,13 +1580,13 @@ function generateDocuments() {
           </thead>
           <tbody>
             <tr>
-              <td style="text-align:center;"><b>${sub.shares.toLocaleString()} Common Shares</b></td>
-              <td style="text-align:center;"><b>${formatPesos(sub.amount)}</b></td>
+              <td style="text-align:center;"><b>${cashShares.toLocaleString()} Common Shares</b></td>
+              <td style="text-align:center;"><b>${formatPesos(cashSubPrice)}</b></td>
             </tr>
           </tbody>
         </table>
         <p style="text-indent: 40px; text-align: justify;">
-          2. Of the subscription price, the Subscriber has paid to the Corporation the amount of <b>${formatPesos(sub.paid)}</b> in <b>CASH</b>.
+          2. Of the subscription price, the Subscriber has paid to the Corporation the amount of <b>${formatPesos(sub.cashPaid)}</b> in <b>CASH</b>.
         </p>
         <p style="text-indent: 40px; text-align: justify;">
           3. That said the amount paid was duly received by the Treasurer of the Corporation.
@@ -1572,7 +1663,8 @@ function generateDocuments() {
     });
   }
 
-  // ================= 4. DEED OF ASSIGNMENT (CONVERSION OF LIABILITIES) =================
+  // ================= 4. DEEDS OF ASSIGNMENT (FOR SUBSCRIBERS WITH CONVERSION > 0) =================
+  const convSubscribers = subscribers.filter(s => s.convPaid > 0);
   if (convSubscribers.length > 0) {
     convSubscribers.forEach(sub => {
       const presDirectorId = findDirectorId(presName);
@@ -1589,6 +1681,9 @@ function generateDocuments() {
           <td>${formatCompetentEvidence(a)}</td>
         </tr>
       `).join('');
+
+      // Prorate conversion shares
+      const convShares = sub.cashPaid === 0 ? sub.shares : (sub.price > 0 ? Math.round(sub.convPaid / sub.price) : 0);
 
       outputHtml += `
       <div class="doc-page">
@@ -1607,19 +1702,19 @@ function generateDocuments() {
         </p>
         <p style="text-align: center; font-weight: bold;">- Witnesseth that -</p>
         <p style="text-indent: 40px; text-align: justify;">
-          WHEREAS, the ASSIGNOR made certain cash advances in the form of Deposits for Future Stock Subscriptions in favor of the Assignee in the amount of <b>${formatPesos(sub.paid)}</b> as reflected in the records of the Assignee (the “Deposits”);
+          WHEREAS, the ASSIGNOR made certain cash advances in the form of Deposits for Future Stock Subscriptions in favor of the Assignee in the amount of <b>${formatPesos(sub.convPaid)}</b> as reflected in the records of the Assignee (the “Deposits”);
         </p>
         <p style="text-indent: 40px; text-align: justify;">
           WHEREAS, the Board of Directors and the Stockholders of the Assignee have resolved and approved the increase in the authorized capital stock from <b>${formatPesos(oldAcs)}</b> divided into <b>${oldShares.toLocaleString()}</b> common shares with a par value <b>${formatPesos(par)}</b> per share to <b>${formatPesos(newAcs)}</b> divided into <b>${newShares.toLocaleString()}</b> common shares with a par value <b>${formatPesos(par)}</b> per share;
         </p>
         <p style="text-indent: 40px; text-align: justify;">
-          WHEREAS, the ASSIGNOR desires to convert the Deposits into <b>${sub.shares.toLocaleString()}</b> common shares of the Assignee with a subscription price of <b>${formatPesos(sub.price)}</b> per share;
+          WHEREAS, the ASSIGNOR desires to convert the Deposits into <b>${convShares.toLocaleString()}</b> common shares of the Assignee with a subscription price of <b>${formatPesos(sub.price)}</b> per share;
         </p>
         <p style="text-indent: 40px; text-align: justify;">
-          WHEREAS, the Board of Directors and Stockholders of the Assignee have authorized the Assignee to accept the subscription by the Assignor to the said <b>${sub.shares.toLocaleString()}</b> common shares at subscription price of <b>${formatPesos(sub.price)}</b> per share or a total value of <b>${formatPesos(sub.amount)}</b> fully payable by way of conversion into equity of the Deposits in the amount of <b>${formatPesos(sub.paid)}</b>;
+          WHEREAS, the Board of Directors and Stockholders of the Assignee have authorized the Assignee to accept the subscription by the Assignor to the said <b>${convShares.toLocaleString()}</b> common shares at subscription price of <b>${formatPesos(sub.price)}</b> per share or a total value of <b>${formatPesos(sub.convPaid)}</b> fully payable by way of conversion into equity of the Deposits in the amount of <b>${formatPesos(sub.convPaid)}</b>;
         </p>
         <p style="text-indent: 40px; text-align: justify;">
-          NOW THEREFORE, the parties have agreed and do hereby agree that for and in consideration of the foregoing premises, Assignor hereby irrevocably assigns, transfers, and conveys in favor of the Assignee, its successors and assigns the Deposit amounting to <b>${formatPesos(sub.paid)}</b> as full payment for his/her subscription to <b>${sub.shares.toLocaleString()}</b> common shares at a subscription price of <b>${formatPesos(sub.price)}</b> per share or a total value of <b>${formatPesos(sub.amount)}</b>.
+          NOW THEREFORE, the parties have agreed and do hereby agree that for and in consideration of the foregoing premises, Assignor hereby irrevocably assigns, transfers, and conveys in favor of the Assignee, its successors and assigns the Deposit amounting to <b>${formatPesos(sub.convPaid)}</b> as full payment for his/her subscription to <b>${convShares.toLocaleString()}</b> common shares at a subscription price of <b>${formatPesos(sub.price)}</b> per share or a total value of <b>${formatPesos(sub.convPaid)}</b>.
         </p>
       </div>
 
