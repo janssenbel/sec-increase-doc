@@ -221,7 +221,6 @@
     @media print {
       @page {
         size: A4 portrait;
-        /* Providing 12mm top/bottom margin ensures overflow continuation pages have safe top spacing */
         margin: 12mm 0 12mm 0 !important;
       }
       html, body {
@@ -303,8 +302,9 @@
           <input type="text" id="principalAddress" required placeholder="Unit 1001, Ayala Ave., Makati City">
         </div>
         <div>
-          <label>City / Venue of Execution</label>
-          <input type="text" id="execCity" required placeholder="Makati City">
+          <label>City / Venue of Execution (optional)</label>
+          <!-- NOT REQUIRED: Leaves space when empty -->
+          <input type="text" id="execCity" placeholder="Leave blank to leave a space">
         </div>
         <div>
           <label>Date of Execution</label>
@@ -760,7 +760,7 @@ function toggleBox(el) {
 // --- JSON BACKUP & IMPORT FEATURE ---
 function exportJSON() {
   const data = {
-    version: '1.8',
+    version: '1.9',
     corpName: document.getElementById('corpName').value,
     formerCorpName: document.getElementById('formerCorpName').value,
     principalAddress: document.getElementById('principalAddress').value,
@@ -886,7 +886,7 @@ function importJSON(event) {
         data.directors.forEach(d => addBodRow(d.name, d.tin, d.id));
       }
 
-      document.querySelector('#subscribersTable tbody').innerHTML = '';
+      document.querySelector('#subscribersTable tbody tr').innerHTML = '';
       if (Array.isArray(data.subscribers)) {
         data.subscribers.forEach(s => addSubscriberRow(s.name, s.tin || '', s.nat, s.addr, s.shares, s.price, s.paid, s.mode, s.id));
       }
@@ -907,7 +907,18 @@ function generateDocuments() {
   const corpName = document.getElementById('corpName').value.toUpperCase();
   const formerCorpName = document.getElementById('formerCorpName').value.trim();
   const address = document.getElementById('principalAddress').value;
-  const execCity = document.getElementById('execCity').value;
+
+  // READ CITY OF EXECUTION: When empty, provide clean legal space
+  const rawCity = document.getElementById('execCity').value.trim();
+  const hasCity = rawCity.length > 0;
+  const cityInline = hasCity ? rawCity : '________________________';
+  const cityInlineUpper = hasCity ? rawCity.toUpperCase() : '________________________';
+
+  // Specific venue block lines matching SEC templates
+  const unifiedVenueCity = hasCity ? `${rawCity} ) S.S.` : `&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_) S.S.`;
+  const subVenueCity = hasCity ? `City of ${rawCity} ) S.S.` : `City of ____________________ ) S.S.`;
+  const deedVenueCity = hasCity ? `${cityInlineUpper} ] S.S.` : `_________________________ ] S.S.`;
+
   const execDate = new Date(document.getElementById('execDate').value);
   const execDay = execDate.getDate();
   const execMonthYear = execDate.toLocaleString('default', { month: 'long', year: 'numeric' });
@@ -1160,7 +1171,7 @@ function generateDocuments() {
   <div class="doc-page">
     <div class="venue-block">
       Republic of the Philippines )<br>
-      ${execCity} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;) S.S.
+      ${unifiedVenueCity}
     </div>
 
     <!-- TITLE EXACTLY 12PT -->
@@ -1289,7 +1300,7 @@ function generateDocuments() {
   <!-- ================= UNIFIED CERTIFICATION: DEDICATED SIGNATURE & JURAT PAGE ================= -->
   <div class="doc-page">
     <p style="text-indent: 40px; margin-top: 15px;">
-      IN WITNESS WHEREOF, we have hereunto signed this certificate this ${execDay} day of ${execMonthYear} at ${execCity}, Philippines.
+      IN WITNESS WHEREOF, we have hereunto signed this certificate this ${execDay} day of ${execMonthYear} at ${cityInline}, Philippines.
     </p>
 
     <table style="width:100%; border:none; margin-top:15px;">
@@ -1321,7 +1332,7 @@ function generateDocuments() {
     <br><br>
     <div style="border-top: 1px dashed #666; padding-top: 15px;">
       <p style="text-indent: 40px; text-align: justify;">
-        SUBSCRIBED AND SWORN to before me this _____ day of _______________ ${execYear} in ${execCity}, affiants exhibited to me their Competent Evidence of Identity:
+        SUBSCRIBED AND SWORN to before me this _____ day of _______________ ${execYear} in ${cityInline}, affiants exhibited to me their Competent Evidence of Identity:
       </p>
       
       <!-- COMPACT EVIDENCE OF IDENTITY TABLE (WIDTH 60%, 8.5PT) -->
@@ -1353,7 +1364,7 @@ function generateDocuments() {
   <div class="doc-page">
     <div class="venue-block">
       Republic of the Philippines )<br>
-      ${execCity} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;) S.S.
+      ${unifiedVenueCity}
     </div>
 
     <!-- TITLE EXACTLY 12PT -->
@@ -1420,7 +1431,7 @@ function generateDocuments() {
         <br>
         <p><b>KNOW ALL PERSONS BY THESE PRESENTS:</b></p>
         <p style="text-indent: 40px; text-align: justify;">
-          This subscription contract is made and entered this ${execDay} day of ${execMonthYear}, ${execCity}, Philippines, by and between:
+          This subscription contract is made and entered this ${execDay} day of ${execMonthYear}, ${cityInline}, Philippines, by and between:
         </p>
         <p style="text-indent: 40px; text-align: justify;">
           <b>${corpName}</b>, a corporation organized and existing under the laws of the Philippines, with principal office address at ${address}, duly represented by its President, <b>${presName}</b>, of legal age, Filipino, and Treasurer, <b>${treasName}</b>, of legal age, Filipino (referred to here as, “the Corporation”);
@@ -1473,7 +1484,7 @@ function generateDocuments() {
       <!-- Subscription Contract: SEPARATED SIGNATURE & ACKNOWLEDGMENT PAGE -->
       <div class="doc-page">
         <p style="text-indent: 40px; margin-top: 15px;">
-          IN WITNESS WHEREOF, we have hereunto set our hands this ${execDay} day of ${execMonthYear} at ${execCity}.
+          IN WITNESS WHEREOF, we have hereunto set our hands this ${execDay} day of ${execMonthYear} at ${cityInline}.
         </p>
         <br><br>
         <table style="width:100%; border:none;">
@@ -1503,11 +1514,11 @@ function generateDocuments() {
           
           <div class="venue-block">
             Republic of the Philippines )<br>
-            City of ${execCity} ) S.S.
+            ${subVenueCity}
           </div>
 
           <p style="text-indent:40px; text-align:justify;">
-            BEFORE ME, a Notary Public in and for ${execCity}, Philippines, this _____ day of _______________ ${execYear}, personally appeared:
+            BEFORE ME, a Notary Public in and for ${hasCity ? cityInline : '____________________'}, Philippines, this _____ day of _______________ ${execYear}, personally appeared:
           </p>
           
           <!-- COMPACT EVIDENCE OF IDENTITY TABLE (WIDTH 60%, 8.5PT) -->
@@ -1596,7 +1607,7 @@ function generateDocuments() {
       <!-- Deed of Assignment: SEPARATED SIGNATURE & ACKNOWLEDGMENT PAGE -->
       <div class="doc-page">
         <p style="text-indent: 40px; margin-top: 15px;">
-          IN WITNESS WHEREOF, the parties have caused this Deed to be signed in their respective names this ${execDay} day of ${execMonthYear} at ${execCity}.
+          IN WITNESS WHEREOF, the parties have caused this Deed to be signed in their respective names this ${execDay} day of ${execMonthYear} at ${cityInline}.
         </p>
         <br><br>
         <table style="width:100%; border:none;">
@@ -1630,7 +1641,7 @@ function generateDocuments() {
           
           <div class="venue-block">
             REPUBLIC OF THE PHILIPPINES ]<br>
-            ${execCity.toUpperCase()} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;] S.S.
+            ${deedVenueCity}
           </div>
 
           <p style="text-indent:40px; text-align:justify;">
