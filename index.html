@@ -2,15 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SEC Capital Increase Document Generator</title>
-
-  <!-- Native .docx generator for Microsoft Word Mobile (iOS / Android) -->
-  <script src="https://cdn.jsdelivr.net/npm/docshift@latest/dist/docshift.min.js"></script>
-
-  <!-- Client-side PDF generator to eliminate browser headers & footers on iPhone -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-
   <style>
     :root {
       --primary: #1e3a8a;
@@ -27,22 +20,20 @@
       color: var(--text);
       margin: 0;
       padding: 0;
-      -webkit-text-size-adjust: 100%;
     }
 
     /* Screen Form UI */
     .app-container {
       max-width: 1100px;
-      margin: 16px auto;
+      margin: 20px auto;
       padding: 0 16px;
-      padding-bottom: env(safe-area-inset-bottom, 20px);
     }
     .card {
       background: var(--card);
       border-radius: 8px;
       border: 1px solid var(--border);
-      padding: 20px;
-      margin-bottom: 20px;
+      padding: 24px;
+      margin-bottom: 24px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
     .header-actions {
@@ -53,19 +44,15 @@
       gap: 12px;
     }
     h1, h2, h3 { margin-top: 0; color: var(--primary); }
-    h1 { font-size: 1.5rem; }
-    h2 { font-size: 1.25rem; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
     .grid-full { grid-column: 1 / -1; }
     label { font-size: 0.85rem; font-weight: 600; display: block; margin-bottom: 4px; }
-    
     input, select, textarea {
       width: 100%;
-      padding: 10px 12px;
+      padding: 8px 12px;
       border: 1px solid var(--border);
       border-radius: 6px;
-      font-size: 16px; /* Prevents auto-zoom in iOS Safari */
-      background: #fff;
+      font-size: 0.95rem;
     }
     input:focus, select:focus, textarea:focus {
       outline: 2px solid var(--primary);
@@ -74,25 +61,18 @@
       background: var(--primary);
       color: white;
       border: none;
-      padding: 12px 18px;
+      padding: 10px 18px;
       font-size: 0.95rem;
       font-weight: 600;
       border-radius: 6px;
       cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 44px; /* Apple minimum touch target */
-      touch-action: manipulation;
-      text-decoration: none;
     }
     .btn:hover { background: var(--primary-hover); }
-    .btn:active { transform: scale(0.98); }
     .btn-secondary { background: #64748b; }
     .btn-secondary:hover { background: #475569; }
     .btn-success { background: #15803d; }
     .btn-success:hover { background: #166534; }
-    .btn-danger { background: #ef4444; padding: 8px 12px; font-size: 0.85rem; }
+    .btn-danger { background: #ef4444; padding: 4px 8px; font-size: 0.8rem; }
     .btn-outline {
       background: white;
       color: var(--primary);
@@ -101,21 +81,10 @@
     .btn-outline:hover {
       background: #eff6ff;
     }
-
-    /* Mobile Scrollable Form Tables */
-    .table-responsive {
-      width: 100%;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-      margin-top: 10px;
-      margin-bottom: 10px;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-    }
     table.data-table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 650px;
+      margin-top: 12px;
     }
     table.data-table th, table.data-table td {
       border: 1px solid var(--border);
@@ -124,36 +93,19 @@
       font-size: 0.85rem;
     }
     table.data-table th { background: #f1f5f9; }
-
     .alert {
       padding: 12px;
       border-radius: 6px;
       margin-top: 12px;
       font-size: 0.9rem;
-      line-height: 1.4;
     }
     .alert-info { background: #e0f2fe; color: #0369a1; }
 
-    /* Sticky Preview Toolbar on Screen */
-    .preview-sticky-bar {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      background: #f1f5f9;
-      border-bottom: 1px solid #cbd5e1;
-      padding: calc(10px + env(safe-area-inset-top, 0px)) 12px 10px 12px;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.06);
-    }
-
-    /* Document Layout */
+    /* Generated Legal Documents Container (A4 Preview) */
     #doc-preview { display: none; }
     .doc-page {
       background: white;
-      width: 210mm;
+      width: 210mm; /* A4 size */
       min-height: 297mm;
       padding: 20mm;
       margin: 20px auto;
@@ -168,15 +120,17 @@
       box-decoration-break: clone;
     }
     
+    /* Main Document Titles: EXACTLY 12PT */
     .doc-main-title {
       font-size: 12pt !important;
       text-align: center !important;
       font-weight: bold;
       text-transform: uppercase;
-      margin: 4px 0 12pt 0;
+      margin: 4px 0 12px 0;
       line-height: 1.3;
     }
 
+    /* Section Headings: EXACTLY 11PT & LEFT ALIGNED */
     .unified-section-title {
       font-size: 11pt !important;
       text-align: left !important;
@@ -186,6 +140,7 @@
       text-transform: none !important;
     }
 
+    /* Standard Table Formatting */
     .doc-table {
       width: 100%;
       border-collapse: collapse;
@@ -205,6 +160,7 @@
       background: #fbfbfb;
     }
 
+    /* REDUCED & COMPACT COMPETENT EVIDENCE TABLE */
     .compact-id-table {
       width: 60% !important;
       margin: 8px auto !important;
@@ -261,61 +217,7 @@
       break-inside: avoid !important;
     }
 
-    /* Screen Preview Adaptations for Phones */
-    @media screen and (max-width: 820px) {
-      .header-actions {
-        flex-direction: column;
-        align-items: stretch;
-      }
-      .header-actions > div:last-child {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-      }
-      .btn {
-        width: 100%;
-      }
-      #doc-preview {
-        padding: 0 8px;
-      }
-      .doc-page {
-        width: 100% !important;
-        min-height: auto !important;
-        padding: 16px 12px !important;
-        margin: 12px auto !important;
-        font-size: 9.5pt !important;
-        box-shadow: 0 1px 4px rgba(0,0,0,0.1);
-      }
-      .compact-id-table {
-        width: 90% !important;
-        font-size: 8pt !important;
-      }
-      .preview-sticky-bar .btn {
-        width: 100%;
-      }
-    }
-
-    /* PDF Rendering Mode (forces true A4 during html2pdf export) */
-    .pdf-export-mode .doc-page {
-      width: 210mm !important;
-      min-height: 297mm !important;
-      height: auto !important;
-      padding: 18mm 20mm 18mm 20mm !important;
-      margin: 0 auto !important;
-      font-size: 10.5pt !important;
-      box-shadow: none !important;
-      page-break-after: always !important;
-      break-after: page !important;
-    }
-    .pdf-export-mode .doc-table {
-      font-size: 9.5pt !important;
-    }
-    .pdf-export-mode .compact-id-table {
-      width: 60% !important;
-      font-size: 8.5pt !important;
-    }
-
-    /* ================= SYSTEM PRINT / AIRPRINT ================= */
+    /* ================= STRICT PRINT & PDF RULES ================= */
     @media print {
       @page {
         size: A4 portrait;
@@ -343,7 +245,6 @@
         min-height: auto !important;
         height: auto !important;
         padding: 8mm 20mm 8mm 20mm !important;
-        font-size: 10.5pt !important;
         page-break-after: always !important;
         break-after: page !important;
         -webkit-box-decoration-break: clone !important;
@@ -361,13 +262,7 @@
         page-break-inside: avoid !important;
         break-inside: avoid !important;
       }
-      .compact-id-table {
-        width: 60% !important;
-        font-size: 8.5pt !important;
-        page-break-inside: avoid !important;
-        break-inside: avoid !important;
-      }
-      .keep-together, .venue-block, .notary-title, .notary-docket, .checkbox-group {
+      .compact-id-table, .keep-together, .venue-block, .notary-title, .notary-docket, .checkbox-group {
         page-break-inside: avoid !important;
         break-inside: avoid !important;
       }
@@ -379,11 +274,11 @@
 <div class="app-container no-print">
   <div class="card header-actions">
     <div>
-      <h1>SEC Increase Document Generator</h1>
-      <p style="margin:0; font-size:0.9rem; color:#64748b;">Unified Certification, Treasurer’s Affidavit, Subscription Contracts & Deeds.</p>
+      <h1>SEC Capital Increase Document Generator</h1>
+      <p style="margin:0;">Unified Certification, Single Consolidated Treasurer’s Affidavit, Cash Subscription Contracts, and Debt Conversion Deeds.</p>
     </div>
     <div style="display:flex; gap:10px;">
-      <button type="button" class="btn btn-outline" onclick="exportJSON()">💾 Backup JSON</button>
+      <button type="button" class="btn btn-outline" onclick="exportJSON()">💾 Backup to JSON</button>
       <button type="button" class="btn btn-outline" onclick="document.getElementById('jsonFileInput').click()">📂 Import JSON</button>
       <input type="file" id="jsonFileInput" accept=".json" style="display:none;" onchange="importJSON(event)">
     </div>
@@ -435,7 +330,7 @@
         </div>
       </div>
       <div id="capitalStats" class="alert alert-info">
-        Fill in share quantities to calculate statutory 25%-25% metrics.
+        Fill in the share amounts to calculate increase metrics.
       </div>
     </div>
 
@@ -443,29 +338,27 @@
     <div class="card">
       <h2>3. Present Capital Stock (Current Shareholdings)</h2>
       <p style="font-size:0.85rem; color:#64748b;">
-        Details as of the stockholders' meeting approving the increase (Section I, Item 3).
+        Details of the capital stock as of the stockholders' meeting approving the increase (Section I, Item 3).
       </p>
-      <div class="table-responsive">
-        <table class="data-table" id="currentStockTable">
-          <thead>
-            <tr>
-              <th>Stockholder Name</th>
-              <th width="120">Nationality</th>
-              <th width="110">Class of Shares</th>
-              <th>No. of Shares</th>
-              <th>Amount Subscribed (Php)</th>
-              <th>Amount Paid-up (Php)</th>
-              <th width="40"></th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-      <button type="button" class="btn btn-secondary" onclick="addCurrentStockRow()">+ Add Existing Stockholder</button>
+      <table class="data-table" id="currentStockTable">
+        <thead>
+          <tr>
+            <th>Stockholder Name</th>
+            <th width="120">Nationality</th>
+            <th width="110">Class of Shares</th>
+            <th>No. of Shares</th>
+            <th>Amount Subscribed (Php)</th>
+            <th>Amount Paid-up (Php)</th>
+            <th width="40"></th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <button type="button" class="btn btn-secondary" onclick="addCurrentStockRow()" style="margin-top: 8px;">+ Add Existing Stockholder</button>
       
       <div class="grid" style="margin-top: 15px;">
         <div>
-          <label>Treasury Shares (Quantity, if any)</label>
+          <label>Treasury Shares (No. of Shares, if any)</label>
           <input type="number" id="treasuryShares" value="0">
         </div>
         <div>
@@ -504,16 +397,16 @@
         </div>
         
         <div class="grid-full">
-          <label>Item 6 Compliance Checkboxes (Select which to check):</label>
-          <div style="display:flex; gap:16px; flex-wrap:wrap; margin-top:6px;">
+          <label>Item 6 Statutory Compliance Checkboxes (Select which to mark):</label>
+          <div style="display:flex; gap:20px; flex-wrap:wrap; margin-top:6px;">
             <label style="font-weight:normal; display:flex; align-items:center; gap:6px; cursor:pointer;">
-              <input type="checkbox" id="chkSec37" style="width:auto;"> Section 37 (RCC)
+              <input type="checkbox" id="chkSec37" style="width:auto;"> Section 37 of the Revised Corporation Code
             </label>
             <label style="font-weight:normal; display:flex; align-items:center; gap:6px; cursor:pointer;">
-              <input type="checkbox" id="chkSec38" style="width:auto;" checked> Section 38 (RCC)
+              <input type="checkbox" id="chkSec38" style="width:auto;" checked> Section 38 of the Revised Corporation Code
             </label>
             <label style="font-weight:normal; display:flex; align-items:center; gap:6px; cursor:pointer;">
-              <input type="checkbox" id="chkSec42" style="width:auto;"> Section 42 (RCC)
+              <input type="checkbox" id="chkSec42" style="width:auto;"> Section 42 of the Revised Corporation Code
             </label>
           </div>
         </div>
@@ -568,20 +461,18 @@
       </div>
 
       <h3 style="margin-top: 18px;">Board of Directors</h3>
-      <div class="table-responsive">
-        <table class="data-table" id="bodTable">
-          <thead>
-            <tr>
-              <th>Director Name</th>
-              <th>TIN</th>
-              <th>ID / Competent Evidence of Identity</th>
-              <th width="40"></th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-      <button type="button" class="btn btn-secondary" onclick="addBodRow()">+ Add Director</button>
+      <table class="data-table" id="bodTable">
+        <thead>
+          <tr>
+            <th>Director Name</th>
+            <th>TIN</th>
+            <th>ID / Competent Evidence of Identity</th>
+            <th width="40"></th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <button type="button" class="btn btn-secondary" onclick="addBodRow()" style="margin-top: 8px;">+ Add Director</button>
     </div>
 
     <!-- 6. Subscribers to the Increase -->
@@ -591,47 +482,44 @@
         <b>Note:</b> If all subscribers pay in <b>Cash</b>, the "Mode of Payment" column is omitted from the table. If any subscriber pays via <b>Conversion</b>, the column will be automatically included.
       </p>
 
-      <div class="table-responsive">
-        <table class="data-table" id="subscribersTable">
-          <thead>
-            <tr>
-              <th>Subscriber Name</th>
-              <th width="120">TIN</th>
-              <th width="100">Nationality</th>
-              <th>Residential Address</th>
-              <th>Shares Subscribed</th>
-              <th>Price / Share</th>
-              <th>Amount Paid (Php)</th>
-              <th>Mode</th>
-              <th>ID / Evidence of Identity</th>
-              <th width="40"></th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-      <button type="button" class="btn btn-secondary" onclick="addSubscriberRow()">+ Add Subscriber</button>
+      <table class="data-table" id="subscribersTable">
+        <thead>
+          <tr>
+            <th>Subscriber Name</th>
+            <th width="120">TIN</th>
+            <th width="100">Nationality</th>
+            <th>Residential Address</th>
+            <th>Shares Subscribed</th>
+            <th>Price / Share</th>
+            <th>Amount Paid (Php)</th>
+            <th>Mode</th>
+            <th>ID / Evidence of Identity</th>
+            <th width="40"></th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <button type="button" class="btn btn-secondary" onclick="addSubscriberRow()" style="margin-top: 8px;">+ Add Subscriber</button>
     </div>
 
+    <!-- Actions -->
     <div class="card" style="text-align: center;">
-      <button type="button" class="btn" style="font-size: 1.1rem; padding: 14px 28px; width:100%; max-width:400px;" onclick="generateDocuments()">
+      <button type="button" class="btn" style="font-size: 1.1rem; padding: 12px 28px;" onclick="generateDocuments()">
         Generate Legal Documents
       </button>
     </div>
   </form>
 </div>
 
-<!-- ================= DOCUMENT PREVIEW AREA ================= -->
+<!-- ================= DOCUMENT TEMPLATE PREVIEW / PRINT AREA ================= -->
 <div id="doc-preview">
-  <div class="preview-sticky-bar no-print">
-    <!-- Clean PDF Button (Generates direct PDF without GitHub URL/Date headers) -->
-    <button id="btnDownloadPdf" class="btn" onclick="downloadCleanPDF()">📄 Download Clean PDF</button>
-    
-    <!-- True .docx Button (Compatible with Microsoft Word Mobile & Desktop) -->
-    <button id="btnDownloadWord" class="btn btn-success" onclick="downloadWordDoc()">📝 Download Word (.docx)</button>
-    
-    <button class="btn btn-secondary" onclick="triggerPrint()">🖨️ System Print</button>
-    <button class="btn btn-secondary" onclick="backToForm()">✏️ Back to Form</button>
+  <div class="no-print" style="text-align:center; padding:15px; background:#f1f5f9; border-bottom:1px solid #ccc; position:sticky; top:0; z-index:99;">
+    <button class="btn btn-success" onclick="downloadWordDoc()">Download as Word (.doc) - A4</button>
+    <button class="btn" onclick="window.print()">Print / Save as PDF</button>
+    <button class="btn btn-secondary" onclick="backToForm()">Back to Form Editor</button>
+    <div style="font-size:0.85rem; color:#64748b; margin-top:6px;">
+      <b>PDF Printing Tip:</b> In the print dialog, uncheck <i>"Headers and footers"</i> if your browser displays URL/date margins.
+    </div>
   </div>
   <div id="renderedDocs"></div>
 </div>
@@ -847,8 +735,8 @@ function updateStats() {
   const statsDiv = document.getElementById('capitalStats');
   statsDiv.innerHTML = `
     <b>Capital Increase:</b> Php ${fmtNum(increase)} | 
-    <b>25% Subscribed:</b> Php ${fmtNum(reqSub)} (Current: <span style="color:${validSub ? 'green' : 'red'}">Php ${fmtNum(totSub)}</span>) | 
-    <b>25% Paid:</b> Php ${fmtNum(reqPaid)} (Current: <span style="color:${validPaid ? 'green' : 'red'}">Php ${fmtNum(totPaid)}</span>)
+    <b>25% Required Subscribed:</b> Php ${fmtNum(reqSub)} (Current: <span style="color:${validSub ? 'green' : 'red'}">Php ${fmtNum(totSub)}</span>) | 
+    <b>25% Required Paid:</b> Php ${fmtNum(reqPaid)} (Current: <span style="color:${validPaid ? 'green' : 'red'}">Php ${fmtNum(totPaid)}</span>)
   `;
 }
 
@@ -871,7 +759,6 @@ window.onload = function() {
 function backToForm() {
   document.getElementById('doc-preview').style.display = 'none';
   document.querySelector('.app-container').style.display = 'block';
-  window.scrollTo(0, 0);
 }
 
 function toggleBox(el) {
@@ -885,7 +772,7 @@ function toggleBox(el) {
 // --- JSON BACKUP & IMPORT FEATURE ---
 function exportJSON() {
   const data = {
-    version: '2.3',
+    version: '2.1',
     corpName: document.getElementById('corpName').value,
     formerCorpName: document.getElementById('formerCorpName').value,
     principalAddress: document.getElementById('principalAddress').value,
@@ -1033,7 +920,7 @@ function generateDocuments() {
   const formerCorpName = document.getElementById('formerCorpName').value.trim();
   const address = document.getElementById('principalAddress').value;
 
-  // City of execution safe formatting
+  // READ CITY OF EXECUTION: When empty, provide clean legal space
   const rawCity = document.getElementById('execCity').value.trim();
   const hasCity = rawCity.length > 0;
   const cityInline = hasCity ? rawCity : '________________________';
@@ -1043,7 +930,7 @@ function generateDocuments() {
   const subVenueCity = hasCity ? `City of ${rawCity} ) S.S.` : `City of ____________________ ) S.S.`;
   const deedVenueCity = hasCity ? `${cityInlineUpper} ] S.S.` : `_________________________ ] S.S.`;
 
-  // Date parsing with zero NaN / Invalid Date
+  // READ DATES SAFELY (Completely eliminates NaN and Invalid Date)
   const execD = parseDateSafe(document.getElementById('execDate').value);
   const hasExecDate = !!execD;
 
@@ -1100,7 +987,7 @@ function generateDocuments() {
   const chairName = (document.getElementById('chairName').value || presName).toUpperCase();
   const meetingSecName = (document.getElementById('meetingSecName').value || secName).toUpperCase();
 
-  // Read Current Stockholders
+  // Read Current Stockholders (Item 3)
   const currentStocks = [];
   let curTotalShares = 0;
   let curTotalSub = 0;
@@ -1315,7 +1202,7 @@ function generateDocuments() {
     </tr>
   `).join('');
 
-  // ================= 1. UNIFIED CERTIFICATION =================
+  // ================= 1. UNIFIED CERTIFICATION - BODY PAGE =================
   outputHtml += `
   <div class="doc-page">
     <div class="venue-block">
@@ -1440,7 +1327,7 @@ function generateDocuments() {
     </div>
   </div>
 
-  <!-- UNIFIED CERTIFICATION SIGNATURE & JURAT PAGE -->
+  <!-- ================= UNIFIED CERTIFICATION: DEDICATED SIGNATURE & JURAT PAGE ================= -->
   <div class="doc-page">
     <p style="text-indent: 40px; margin-top: 15px;">
       IN WITNESS WHEREOF, we have hereunto signed this certificate ${execSigningPhrase} at ${cityInline}, Philippines.
@@ -1500,7 +1387,7 @@ function generateDocuments() {
     </div>
   </div>`;
 
-  // ================= 2. TREASURER'S AFFIDAVIT =================
+  // ================= 2. EXACTLY ONE CONSOLIDATED TREASURER'S AFFIDAVIT SHOWING THE TOTAL =================
   outputHtml += `
   <div class="doc-page">
     <div class="venue-block">
@@ -1813,107 +1700,11 @@ function generateDocuments() {
   window.scrollTo(0, 0);
 }
 
-// --- 1. DIRECT CLEAN PDF EXPORT (Eliminates Browser URL & Date Headers on iPhone) ---
-async function downloadCleanPDF() {
-  const corpName = (document.getElementById('corpName').value || 'Corporate').replace(/[^a-zA-Z0-9_-]/g, '_');
-  const previewContainer = document.getElementById('renderedDocs');
-  const btn = document.getElementById('btnDownloadPdf');
-  
-  const originalBtnText = btn.innerHTML;
-  btn.innerHTML = '⏳ Generating PDF...';
-  btn.disabled = true;
-
-  // Force desktop A4 styling during PDF generation so output is never squished
-  document.body.classList.add('pdf-export-mode');
-
-  await new Promise(r => setTimeout(r, 120));
-
-  const opt = {
-    margin: [10, 15, 10, 15],
-    filename: `${corpName}_SEC_Increase_Documents.pdf`,
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { 
-      scale: 2, 
-      useCORS: true, 
-      logging: false,
-      scrollY: 0,
-      windowWidth: 794
-    },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-    pagebreak: { mode: ['css', 'legacy'] }
-  };
-
-  try {
-    if (window.html2pdf) {
-      await html2pdf().set(opt).from(previewContainer).save();
-    } else {
-      triggerPrint();
-    }
-  } catch (err) {
-    console.error('PDF generation error:', err);
-    triggerPrint();
-  } finally {
-    document.body.classList.remove('pdf-export-mode');
-    btn.innerHTML = originalBtnText;
-    btn.disabled = false;
-  }
-}
-
-// System print helper that suppresses window.title during print
-function triggerPrint() {
-  const originalTitle = document.title;
-  document.title = " ";
-  window.print();
-  setTimeout(() => {
-    document.title = originalTitle;
-  }, 1000);
-}
-
-// --- 2. NATIVE .DOCX EXPORT (Opens in Word for iOS / Android / Desktop) ---
-async function downloadWordDoc() {
+// --- Save / Export to Word (.doc) formatted to A4 ---
+function downloadWordDoc() {
   const corpName = (document.getElementById('corpName').value || 'Corporate').replace(/[^a-zA-Z0-9_-]/g, '_');
   const pages = document.querySelectorAll('#renderedDocs .doc-page');
-  const btn = document.getElementById('btnDownloadWord');
-  const originalText = btn.innerHTML;
   
-  btn.innerHTML = '⏳ Creating .docx...';
-  btn.disabled = true;
-
-  try {
-    // Generate true OpenXML .docx file readable by Microsoft Word Mobile
-    if (window.docshift && typeof window.docshift.toDocx === 'function') {
-      let combinedHtml = '';
-      pages.forEach((page, index) => {
-        combinedHtml += page.outerHTML;
-        if (index < pages.length - 1) {
-          combinedHtml += '<div style="page-break-after: always;"></div>';
-        }
-      });
-
-      const docxBlob = await window.docshift.toDocx(combinedHtml);
-      const url = URL.createObjectURL(docxBlob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${corpName}_SEC_Increase_Documents.docx`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      btn.innerHTML = originalText;
-      btn.disabled = false;
-      return;
-    }
-  } catch (e) {
-    console.warn('DocShift .docx generation failed, using legacy fallback', e);
-  }
-
-  // Fallback to legacy document packaging if needed
-  downloadLegacyDoc(corpName, pages);
-  btn.innerHTML = originalText;
-  btn.disabled = false;
-}
-
-function downloadLegacyDoc(corpName, pages) {
   let combinedBody = '';
   pages.forEach((page, index) => {
     combinedBody += `<div>${page.innerHTML}</div>`;
@@ -1931,33 +1722,99 @@ function downloadLegacyDoc(corpName, pages) {
       <title>SEC Increase Documents</title>
       <style>
         @page Section1 {
-          size: 21.0cm 29.7cm;
+          size: 21.0cm 29.7cm; /* Exact A4 dimensions */
           margin: 1.0in 1.0in 1.0in 1.0in;
+          mso-header-margin: 36.0pt;
+          mso-footer-margin: 36.0pt;
+          mso-paper-source: 0;
         }
-        div.Section1 { page: Section1; }
-        body { font-family: 'Times New Roman', serif; font-size: 11pt; line-height: 1.35; }
-        .doc-main-title { font-size: 12pt; text-align: center; font-weight: bold; text-transform: uppercase; margin: 4pt 0 12pt 0; }
-        .unified-section-title { font-size: 11pt; text-align: left; font-weight: bold; margin-top: 10pt; margin-bottom: 4pt; }
-        table.doc-table { width: 100%; border-collapse: collapse; margin: 8pt 0; font-size: 10pt; }
-        table.doc-table th, table.doc-table td { border: 1pt solid black; padding: 4pt 6pt; }
-        table.compact-id-table { width: 60%; margin: 6pt auto; font-size: 8.5pt; border-collapse: collapse; }
-        table.compact-id-table th, table.compact-id-table td { border: 1pt solid black; padding: 2pt 4pt; }
-        .venue-block { text-align: left; line-height: 1.2; margin-bottom: 14pt; }
-        .notary-title { text-align: right; margin-top: 18pt; margin-bottom: 18pt; }
-        .notary-docket { text-align: left; line-height: 1.4; }
+        div.Section1 {
+          page: Section1;
+        }
+        body {
+          font-family: 'Times New Roman', serif;
+          font-size: 11pt;
+          line-height: 1.35;
+        }
+        .doc-main-title {
+          font-size: 12pt !important;
+          text-align: center !important;
+          font-weight: bold;
+          text-transform: uppercase;
+          margin: 4pt 0 12pt 0;
+        }
+        .unified-section-title {
+          font-size: 11pt !important;
+          text-align: left !important;
+          font-weight: bold;
+          margin-top: 10pt;
+          margin-bottom: 4pt;
+          text-transform: none !important;
+        }
+        table.doc-table {
+          width: 100%;
+          border-collapse: collapse;
+          margin: 8pt 0;
+          font-size: 10pt;
+        }
+        table.doc-table th, table.doc-table td {
+          border: 1pt solid black;
+          padding: 4pt 6pt;
+        }
+        table.doc-table th {
+          text-align: center;
+          font-weight: bold;
+        }
+        table.compact-id-table {
+          width: 60%;
+          margin: 6pt auto;
+          font-size: 8.5pt;
+          border-collapse: collapse;
+        }
+        table.compact-id-table th, table.compact-id-table td {
+          border: 1pt solid black;
+          padding: 2pt 4pt;
+        }
+        table.compact-id-table th {
+          text-align: center;
+          font-weight: bold;
+        }
+        .venue-block {
+          text-align: left;
+          line-height: 1.2;
+          margin-bottom: 14pt;
+        }
+        .notary-title {
+          text-align: right;
+          margin-top: 18pt;
+          margin-bottom: 18pt;
+        }
+        .notary-docket {
+          text-align: left;
+          line-height: 1.4;
+        }
+        .box-mark {
+          font-family: 'Segoe UI Symbol', 'DejaVu Sans', Arial, sans-serif;
+          font-size: 12pt;
+        }
       </style>
     </head>
     <body>
-      <div class="Section1">${combinedBody}</div>
+      <div class="Section1">
+        ${combinedBody}
+      </div>
     </body>
     </html>
   `;
 
-  const blob = new Blob(['\ufeff', wordTemplate], { type: 'application/msword' });
+  const blob = new Blob(['\ufeff', wordTemplate], {
+    type: 'application/msword'
+  });
+
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `${corpName}_SEC_Increase_Documents.doc`;
+  a.download = `${corpName}_SEC_Increase_Documents_A4.doc`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
