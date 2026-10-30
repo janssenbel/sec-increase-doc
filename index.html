@@ -138,7 +138,7 @@
       text-transform: none !important;
     }
 
-    /* Table Formatting & Anti-Cut Rules */
+    /* Standard Table Formatting */
     .doc-table {
       width: 100%;
       border-collapse: collapse;
@@ -155,6 +155,25 @@
     .doc-table th { 
       text-align: center; 
       font-weight: bold; 
+      background: #fbfbfb;
+    }
+
+    /* REDUCED & COMPACT COMPETENT EVIDENCE TABLE */
+    .compact-id-table {
+      width: 60% !important;
+      margin: 8px auto !important;
+      font-size: 8.5pt !important;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+    .compact-id-table th, .compact-id-table td {
+      border: 1px solid black;
+      padding: 2px 6px !important;
+      line-height: 1.25;
+    }
+    .compact-id-table th {
+      text-align: center;
+      font-weight: bold;
       background: #fbfbfb;
     }
     
@@ -192,9 +211,8 @@
       user-select: none;
     }
 
-    /* ================= STRICT PRINT & PDF RULES ================= */
+    /* Strict Print Rules: Clean PDF Without Browser Headers/Footers */
     @media print {
-      /* Remove browser default URL, title, date headers & footers */
       @page {
         size: A4 portrait;
         margin: 0 !important;
@@ -220,7 +238,7 @@
         width: 210mm !important;
         min-height: 297mm !important;
         height: auto !important;
-        padding: 20mm !important; /* Replaces browser margin to prevent clipping */
+        padding: 20mm !important;
         page-break-after: always !important;
         break-after: page !important;
       }
@@ -228,7 +246,6 @@
         page-break-after: auto !important;
         break-after: auto !important;
       }
-      /* Prevent ugly table cuts across page lines */
       table {
         page-break-inside: auto !important;
         break-inside: auto !important;
@@ -237,7 +254,11 @@
         page-break-inside: avoid !important;
         break-inside: avoid !important;
       }
-      .venue-block, .notary-title, .notary-docket, .checkbox-item, .signatory-container {
+      .compact-id-table {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+      }
+      .venue-block, .notary-title, .notary-docket, .checkbox-item {
         page-break-inside: avoid !important;
         break-inside: avoid !important;
       }
@@ -735,7 +756,7 @@ function toggleBox(el) {
 // --- JSON BACKUP & IMPORT FEATURE ---
 function exportJSON() {
   const data = {
-    version: '1.6',
+    version: '1.7',
     corpName: document.getElementById('corpName').value,
     formerCorpName: document.getElementById('formerCorpName').value,
     principalAddress: document.getElementById('principalAddress').value,
@@ -1292,7 +1313,9 @@ function generateDocuments() {
       <p style="text-indent: 40px; text-align: justify;">
         SUBSCRIBED AND SWORN to before me this _____ day of _______________ ${execYear} in ${execCity}, affiants exhibited to me their Competent Evidence of Identity:
       </p>
-      <table class="doc-table" style="width:85%; margin:10px auto;">
+      
+      <!-- COMPACT EVIDENCE OF IDENTITY TABLE (WIDTH 60%, 8.5PT) -->
+      <table class="compact-id-table">
         <thead>
           <tr>
             <th style="width:50%;">Name</th>
@@ -1477,8 +1500,8 @@ function generateDocuments() {
             BEFORE ME, a Notary Public in and for ${execCity}, Philippines, this _____ day of _______________ ${execYear}, personally appeared:
           </p>
           
-          <!-- 2-COLUMN TABLE FOR COMPETENT EVIDENCE -->
-          <table class="doc-table" style="width:85%; margin:15px auto;">
+          <!-- COMPACT EVIDENCE OF IDENTITY TABLE (WIDTH 60%, 8.5PT) -->
+          <table class="compact-id-table">
             <thead>
               <tr>
                 <th style="width:50%;">Name</th>
@@ -1603,7 +1626,9 @@ function generateDocuments() {
           <p style="text-indent:40px; text-align:justify;">
             BEFORE ME, a Notary Public for and in the above-named jurisdiction on this _____ day of _______________ ${execYear}, personally appeared the following:
           </p>
-          <table class="doc-table" style="width:85%; margin:10px auto;">
+          
+          <!-- COMPACT EVIDENCE OF IDENTITY TABLE (WIDTH 60%, 8.5PT) -->
+          <table class="compact-id-table">
             <thead>
               <tr>
                 <th style="width:50%;">Name</th>
@@ -1700,6 +1725,20 @@ function downloadWordDoc() {
           padding: 4pt 6pt;
         }
         table.doc-table th {
+          text-align: center;
+          font-weight: bold;
+        }
+        table.compact-id-table {
+          width: 60%;
+          margin: 6pt auto;
+          font-size: 8.5pt;
+          border-collapse: collapse;
+        }
+        table.compact-id-table th, table.compact-id-table td {
+          border: 1pt solid black;
+          padding: 2pt 4pt;
+        }
+        table.compact-id-table th {
           text-align: center;
           font-weight: bold;
         }
