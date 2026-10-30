@@ -122,7 +122,6 @@
       text-transform: uppercase;
     }
     
-    /* Specific Typography Requirements for Unified Form */
     .unified-main-title {
       font-size: 12pt !important;
       text-align: center !important;
@@ -423,12 +422,13 @@
         <thead>
           <tr>
             <th>Subscriber Name</th>
-            <th>Nationality & Status</th>
+            <th width="110">TIN</th>
+            <th width="100">Nationality</th>
             <th>Residential Address</th>
             <th>Shares Subscribed</th>
-            <th>Subscription Price / Share</th>
+            <th>Price / Share</th>
             <th>Amount Paid (Php)</th>
-            <th>Mode of Payment</th>
+            <th>Mode</th>
             <th>ID / Evidence of Identity</th>
             <th width="40"></th>
           </tr>
@@ -499,25 +499,33 @@ function fmtNum(n) {
   return (n || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-// Helper: Deduplicate Signatories for Notarial Jurats / Acknowledgments
+// Helper: Deduplicate Signatories for Notarial Jurats / Acknowledgments (carrying name, tin, and id)
 function deduplicateSignatories(list) {
   const map = new Map();
   list.forEach(item => {
     const key = (item.name || '').trim().toUpperCase();
     if (!key) return;
     const cleanId = (item.id || '').trim();
+    const cleanTin = (item.tin || '').trim();
 
     if (!map.has(key)) {
-      map.set(key, cleanId || 'Competent Evidence of Identity');
+      map.set(key, {
+        name: key,
+        tin: cleanTin || '-',
+        id: cleanId || 'Competent Evidence of Identity'
+      });
     } else {
-      const currentId = map.get(key);
-      const isGeneric = !currentId || currentId === 'Competent Evidence of Identity' || currentId === 'Government Issued ID';
+      const existing = map.get(key);
+      if ((!existing.tin || existing.tin === '-') && cleanTin) {
+        existing.tin = cleanTin;
+      }
+      const isGeneric = !existing.id || existing.id === 'Competent Evidence of Identity' || existing.id === 'Government Issued ID';
       if (isGeneric && cleanId) {
-        map.set(key, cleanId);
+        existing.id = cleanId;
       }
     }
   });
-  return Array.from(map.entries()).map(([name, id]) => ({ name, id }));
+  return Array.from(map.values());
 }
 
 // --- Dynamic Row Handlers: Present Stockholders ---
@@ -558,11 +566,12 @@ function addBodRow(name = '', tin = '', idProof = '') {
   tbody.appendChild(tr);
 }
 
-function addSubscriberRow(name = '', nat = 'Filipino', addr = '', shares = 1000, price = 100, paid = 100000, mode = 'Cash', idProof = '') {
+function addSubscriberRow(name = '', tin = '', nat = 'Filipino', addr = '', shares = 1000, price = 100, paid = 100000, mode = 'Cash', idProof = '') {
   const tbody = document.querySelector('#subscribersTable tbody');
   const tr = document.createElement('tr');
   tr.innerHTML = `
     <td><input type="text" class="sub-name" value="${name}" placeholder="Subscriber Name" required></td>
+    <td><input type="text" class="sub-tin" value="${tin}" placeholder="TIN"></td>
     <td><input type="text" class="sub-nat" value="${nat}" placeholder="Filipino"></td>
     <td><input type="text" class="sub-addr" value="${addr}" placeholder="Address"></td>
     <td><input type="number" class="sub-shares" value="${shares}" oninput="recalcSubRow(this)" required></td>
@@ -639,8 +648,8 @@ window.onload = function() {
   addBodRow('MARIA SANTOS', '234-567-890-000', 'Driver\'s License N01-12-345678');
   addBodRow('PEDRO PENDUKO', '345-678-901-000', 'UMID 0011-2233445-6');
 
-  addSubscriberRow('JUAN DELA CRUZ', 'Filipino', '123 Pine St., Makati City', 10000, 100, 1000000, 'Cash', 'Passport P1234567B');
-  addSubscriberRow('MARIA SANTOS', 'Filipino', '456 Oak St., Taguig City', 5000, 100, 500000, 'Conversion', 'Driver\'s License N01-12-345678');
+  addSubscriberRow('JUAN DELA CRUZ', '123-456-789-000', 'Filipino', '123 Pine St., Makati City', 10000, 100, 1000000, 'Cash', 'Passport P1234567B');
+  addSubscriberRow('MARIA SANTOS', '234-567-890-000', 'Filipino', '456 Oak St., Taguig City', 5000, 100, 500000, 'Conversion', 'Driver\'s License N01-12-345678');
 };
 
 function backToForm() {
@@ -659,7 +668,7 @@ function toggleBox(el) {
 // --- JSON BACKUP & IMPORT FEATURE ---
 function exportJSON() {
   const data = {
-    version: '1.2',
+    version: '1.3',
     corpName: document.getElementById('corpName').value,
     formerCorpName: document.getElementById('formerCorpName').value,
     principalAddress: document.getElementById('principalAddress').value,
@@ -714,6 +723,7 @@ function exportJSON() {
   document.querySelectorAll('#subscribersTable tbody tr').forEach(tr => {
     data.subscribers.push({
       name: tr.querySelector('.sub-name').value,
+      tin: tr.querySelector('.sub-tin').value,
       nat: tr.querySelector('.sub-nat').value,
       addr: tr.querySelector('.sub-addr').value,
       shares: tr.querySelector('.sub-shares').value,
@@ -786,7 +796,7 @@ function importJSON(event) {
 
       document.querySelector('#subscribersTable tbody').innerHTML = '';
       if (Array.isArray(data.subscribers)) {
-        data.subscribers.forEach(s => addSubscriberRow(s.name, s.nat, s.addr, s.shares, s.price, s.paid, s.mode, s.id));
+        data.subscribers.forEach(s => addSubscriberRow(s.name, s.tin || '', s.nat, s.addr, s.shares, s.price, s.paid, s.mode, s.id));
       }
 
       updateStats();
@@ -884,6 +894,7 @@ function generateDocuments() {
 
   document.querySelectorAll('#subscribersTable tbody tr').forEach((tr, idx) => {
     const sName = tr.querySelector('.sub-name').value.toUpperCase();
+    const sTin = tr.querySelector('.sub-tin').value.trim();
     const nat = tr.querySelector('.sub-nat').value;
     const addr = tr.querySelector('.sub-addr').value;
     const sQty = parseFloat(tr.querySelector('.sub-shares').value) || 0;
@@ -906,6 +917,7 @@ function generateDocuments() {
     subscribers.push({
       item: idx + 1,
       name: sName,
+      tin: sTin,
       nat: nat,
       addr: addr,
       shares: sQty,
@@ -1033,17 +1045,17 @@ function generateDocuments() {
 
   // --- Deduplicate Notary Jurat Affiants for Unified Certification ---
   const rawUnifiedAffiants = [
-    ...directors.map(d => ({ name: d.name, id: d.id || (d.tin ? `TIN: ${d.tin}` : '') })),
-    { name: secName, id: secTIN ? `TIN: ${secTIN}` : '' },
-    { name: chairName, id: presTIN ? `TIN: ${presTIN}` : '' },
-    { name: meetingSecName, id: secTIN ? `TIN: ${secTIN}` : '' }
+    ...directors.map(d => ({ name: d.name, tin: d.tin, id: d.id })),
+    { name: secName, tin: secTIN, id: 'Corporate Secretary ID' },
+    { name: chairName, tin: presTIN, id: 'Chairperson ID' },
+    { name: meetingSecName, tin: secTIN, id: 'Meeting Secretary ID' }
   ];
   const uniqueUnifiedAffiants = deduplicateSignatories(rawUnifiedAffiants);
 
   let idTableRowsHtml = uniqueUnifiedAffiants.map(d => `
     <tr>
       <td>${d.name}</td>
-      <td>${d.id}</td>
+      <td>${d.id || (d.tin ? 'TIN: ' + d.tin : 'Competent Evidence of Identity')}</td>
     </tr>
   `).join('');
 
@@ -1278,17 +1290,23 @@ function generateDocuments() {
   // ================= 3. SUBSCRIPTION CONTRACT (FOR CASH) =================
   if (cashSubscribers.length > 0) {
     cashSubscribers.forEach(sub => {
+      // Find IDs if available from Directors list
+      const presDirector = directors.find(d => d.name === presName);
+      const treasDirector = directors.find(d => d.name === treasName);
+
       const rawSubAffiants = [
-        { name: sub.name, id: sub.id },
-        { name: presName, id: presTIN ? `TIN: ${presTIN}` : 'Government Issued ID' },
-        { name: treasName, id: treasTIN ? `TIN: ${treasTIN}` : 'Government Issued ID' }
+        { name: sub.name, tin: sub.tin, id: sub.id },
+        { name: presName, tin: presTIN, id: presDirector?.id || 'Government Issued ID' },
+        { name: treasName, tin: treasTIN, id: treasDirector?.id || 'Government Issued ID' }
       ];
       const uniqueSubAffiants = deduplicateSignatories(rawSubAffiants);
 
+      // FIXED: Exactly 3 td cells corresponding to 3 th cells (Name | TIN | Competent Evidence)
       const subAffiantsHtml = uniqueSubAffiants.map(a => `
         <tr>
           <td>${a.name}</td>
-          <td>${a.id}</td>
+          <td style="text-align:center;">${a.tin && a.tin !== '-' ? a.tin : '-'}</td>
+          <td>${a.id || 'Competent Evidence of Identity'}</td>
         </tr>
       `).join('');
 
@@ -1360,16 +1378,19 @@ function generateDocuments() {
             <td style="width:50%; border:none; text-align:center;">
               ________________________________<br>
               <b>${sub.name}</b><br>
-              Subscriber
+              Subscriber<br>
+              ${sub.tin ? `TIN: ${sub.tin}` : ''}
             </td>
             <td style="width:50%; border:none; text-align:center;">
               Certified by:<br><br>
               ________________________________<br>
               <b>${presName}</b><br>
-              President<br><br>
+              President<br>
+              ${presTIN ? `TIN: ${presTIN}` : ''}<br><br>
               ________________________________<br>
               <b>${treasName}</b><br>
-              Treasurer
+              Treasurer<br>
+              ${treasTIN ? `TIN: ${treasTIN}` : ''}
             </td>
           </tr>
         </table>
@@ -1385,18 +1406,21 @@ function generateDocuments() {
           <p style="text-indent:40px; text-align:justify;">
             BEFORE ME, a Notary Public in and for ${execCity}, Philippines, this _____ day of _______________ ${execYear}, personally appeared:
           </p>
-          <table class="doc-table" style="width:85%; margin:10px auto;">
+          
+          <!-- FIXED 3-COLUMN TABLE FOR COMPETENT EVIDENCE IN SUBSCRIPTION CONTRACT -->
+          <table class="doc-table" style="width:90%; margin:15px auto;">
             <thead>
               <tr>
-                <th>Name</th>
-                <th>TIN</th>
-                <th>Competent Evidence of Identity</th>
+                <th style="width:38%;">Name</th>
+                <th style="width:26%;">TIN</th>
+                <th style="width:36%;">Competent Evidence of Identity</th>
               </tr>
             </thead>
             <tbody>
               ${subAffiantsHtml}
             </tbody>
           </table>
+
           <p style="text-indent:40px; text-align:justify;">
             All known to me and to me known to be the same persons who executed the foregoing Subscription Contract and they acknowledged to me that the same is their free and voluntary act and deed.
           </p>
@@ -1417,16 +1441,18 @@ function generateDocuments() {
   // ================= 4. DEED OF ASSIGNMENT (CONVERSION OF LIABILITIES) =================
   if (convSubscribers.length > 0) {
     convSubscribers.forEach(sub => {
+      const presDirector = directors.find(d => d.name === presName);
+
       const rawDeedAffiants = [
-        { name: sub.name, id: sub.id },
-        { name: presName, id: presTIN ? `TIN: ${presTIN}` : 'Government Issued ID' }
+        { name: sub.name, tin: sub.tin, id: sub.id },
+        { name: presName, tin: presTIN, id: presDirector?.id || 'Government Issued ID' }
       ];
       const uniqueDeedAffiants = deduplicateSignatories(rawDeedAffiants);
 
       const deedAffiantsHtml = uniqueDeedAffiants.map(a => `
         <tr>
           <td>${a.name}</td>
-          <td>${a.id}</td>
+          <td>${a.id || (a.tin && a.tin !== '-' ? 'TIN: ' + a.tin : 'Competent Evidence of Identity')}</td>
         </tr>
       `).join('');
 
