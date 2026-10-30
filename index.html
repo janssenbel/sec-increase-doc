@@ -107,7 +107,7 @@
       background: white;
       width: 210mm; /* A4 size */
       min-height: 297mm;
-      padding: 20mm; /* 20mm margin */
+      padding: 20mm;
       margin: 20px auto;
       box-shadow: 0 0 10px rgba(0,0,0,0.15);
       font-family: 'Times New Roman', Times, serif;
@@ -116,6 +116,8 @@
       color: #000;
       box-sizing: border-box;
       position: relative;
+      -webkit-box-decoration-break: clone;
+      box-decoration-break: clone;
     }
     
     /* Main Document Titles: EXACTLY 12PT */
@@ -142,7 +144,7 @@
     .doc-table {
       width: 100%;
       border-collapse: collapse;
-      margin: 10px 0;
+      margin: 8px 0;
       font-size: 9.5pt;
       table-layout: auto;
       word-break: break-word;
@@ -185,7 +187,6 @@
       font-family: 'Times New Roman', Times, serif;
     }
 
-    /* Notary Public Right-Aligned & Docket Info Left-Aligned */
     .notary-title {
       text-align: right !important;
       font-family: 'Times New Roman', Times, serif;
@@ -211,11 +212,17 @@
       user-select: none;
     }
 
-    /* Strict Print Rules: Clean PDF Without Browser Headers/Footers */
+    .keep-together {
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+    }
+
+    /* ================= STRICT PRINT & PDF RULES ================= */
     @media print {
       @page {
         size: A4 portrait;
-        margin: 0 !important;
+        /* Providing 12mm top/bottom margin ensures overflow continuation pages have safe top spacing */
+        margin: 12mm 0 12mm 0 !important;
       }
       html, body {
         margin: 0 !important;
@@ -236,11 +243,13 @@
         box-shadow: none !important;
         margin: 0 !important;
         width: 210mm !important;
-        min-height: 297mm !important;
+        min-height: auto !important;
         height: auto !important;
-        padding: 20mm !important;
+        padding: 8mm 20mm 8mm 20mm !important;
         page-break-after: always !important;
         break-after: page !important;
+        -webkit-box-decoration-break: clone !important;
+        box-decoration-break: clone !important;
       }
       .doc-page:last-child {
         page-break-after: auto !important;
@@ -254,11 +263,7 @@
         page-break-inside: avoid !important;
         break-inside: avoid !important;
       }
-      .compact-id-table {
-        page-break-inside: avoid !important;
-        break-inside: avoid !important;
-      }
-      .venue-block, .notary-title, .notary-docket, .checkbox-item {
+      .compact-id-table, .keep-together, .venue-block, .notary-title, .notary-docket, .checkbox-group {
         page-break-inside: avoid !important;
         break-inside: avoid !important;
       }
@@ -514,7 +519,7 @@
     <button class="btn" onclick="window.print()">Print / Save as PDF</button>
     <button class="btn btn-secondary" onclick="backToForm()">Back to Form Editor</button>
     <div style="font-size:0.85rem; color:#64748b; margin-top:6px;">
-      <b>PDF Tip:</b> In the print dialog, ensure Paper Size is set to <b>A4</b>. (Browser headers & footers are automatically disabled by code).
+      <b>PDF Printing Tip:</b> In the print dialog, uncheck <i>"Headers and footers"</i> if your browser displays URL/date margins.
     </div>
   </div>
   <div id="renderedDocs"></div>
@@ -567,7 +572,6 @@ function formatCompetentEvidence(person) {
   const tin = (person.tin || '').trim();
   let id = (person.id || '').trim();
 
-  // Strip out unwanted placeholder strings
   if (
     id.toLowerCase().includes('corporate secretary') ||
     id.toLowerCase().includes('chairperson') ||
@@ -756,7 +760,7 @@ function toggleBox(el) {
 // --- JSON BACKUP & IMPORT FEATURE ---
 function exportJSON() {
   const data = {
-    version: '1.7',
+    version: '1.8',
     corpName: document.getElementById('corpName').value,
     formerCorpName: document.getElementById('formerCorpName').value,
     principalAddress: document.getElementById('principalAddress').value,
@@ -882,7 +886,7 @@ function importJSON(event) {
         data.directors.forEach(d => addBodRow(d.name, d.tin, d.id));
       }
 
-      document.querySelector('#subscribersTable tbody tr').innerHTML = '';
+      document.querySelector('#subscribersTable tbody').innerHTML = '';
       if (Array.isArray(data.subscribers)) {
         data.subscribers.forEach(s => addSubscriberRow(s.name, s.tin || '', s.nat, s.addr, s.shares, s.price, s.paid, s.mode, s.id));
       }
@@ -1166,22 +1170,22 @@ function generateDocuments() {
     </div>
     ${formerCorpName ? `<div style="text-align:center; font-style:italic; font-size:11pt; margin-bottom:8px;">[Formerly: ${formerCorpName}]</div>` : ''}
     <br>
-    <p style="text-indent: 40px; text-align: justify;">
+    <p style="text-indent: 40px; text-align: justify; margin: 4px 0;">
       We, the undersigned majority of the Board of Directors, the Corporate Secretary, the Chairperson, and the Secretary of the stockholders’ meeting of <b>${corpName}</b> (“Corporation”), a corporation duly organized and existing under the laws of the Republic of the Philippines, with principal office address at ${address}, do hereby certify:
     </p>
 
     <!-- SECTION I: LEFT ALIGNED, SIZE 11 -->
     <div class="unified-section-title">I. Approval and Details for the Increase of Authorized Capital Stock</div>
     
-    <p style="text-indent: 40px; text-align: justify;">
+    <p style="text-indent: 40px; text-align: justify; margin: 4px 0;">
       1. That at the special meeting of the stockholders of Corporation ${meetingFormat} on <b>${shMeetingDate}</b>, at which meeting there was a quorum, the stockholders representing at least two-thirds (2/3) of the outstanding capital stock in person or by proxy, approved the increase of the corporation’s authorized capital stock (ACS) 
       from <b>${formatPesos(oldAcs)}</b> divided into <b>${oldShares.toLocaleString()}</b> shares, with a par value of <b>${formatPesos(par)}</b> per share,
       to <b>${formatPesos(newAcs)}</b> divided into <b>${newShares.toLocaleString()}</b> shares, with a par value of <b>${formatPesos(par)}</b> per share;
     </p>
-    <p style="text-indent: 40px; text-align: justify;">
+    <p style="text-indent: 40px; text-align: justify; margin: 4px 0;">
       2. That the increase was likewise approved by the majority of the directors at a meeting held on <b>${bodMeetingDate}</b>;
     </p>
-    <p style="text-indent: 40px; text-align: justify;">
+    <p style="text-indent: 40px; text-align: justify; margin: 4px 0;">
       3. That as of <b>${shMeetingDate}</b>, the details of the present capital stock, are as follows:
     </p>
 
@@ -1206,7 +1210,7 @@ function generateDocuments() {
       </tbody>
     </table>
 
-    <p style="text-indent: 40px; text-align: justify;">
+    <p style="text-indent: 40px; text-align: justify; margin: 4px 0;">
       4. That out of the increase of <b>${formatPesos(increase)}</b>, the amount of <b>${formatPesos(totalSubscribed)}</b> has been subscribed and out of said subscription, the amount of <b>${formatPesos(totalPaid)}</b> has been actually paid by the subscribers ${hasNonCash ? 'as follows:' : 'through cash as follows:'}
     </p>
 
@@ -1226,54 +1230,60 @@ function generateDocuments() {
       </tbody>
     </table>
 
-    <p style="text-align: justify;">
+    <p style="text-align: justify; margin: 4px 0;">
       5. That no bonded indebtedness has been incurred, created, or increased as of the date of the meeting; and
     </p>
-    <p style="text-align: justify; margin-bottom: 4px;">
-      6. That the requirements of:
-    </p>
     
-    <div style="margin-left: 20px; margin-bottom: 15px; line-height: 1.8;">
-      <div class="checkbox-item" onclick="toggleBox(this.querySelector('.box-mark'))">
-        <span class="box-mark">${sec37 ? '&#9745;' : '&#9744;'}</span>
-        <span>Section 37 of the Revised Corporation Code of the Philippines have been complied with;</span>
-      </div>
-      <div class="checkbox-item" onclick="toggleBox(this.querySelector('.box-mark'))">
-        <span class="box-mark">${sec38 ? '&#9745;' : '&#9744;'}</span>
-        <span>Section 38 of the Revised Corporation Code of the Philippines have been complied with;</span>
-      </div>
-      <div class="checkbox-item" onclick="toggleBox(this.querySelector('.box-mark'))">
-        <span class="box-mark">${sec42 ? '&#9745;' : '&#9744;'}</span>
-        <span>Section 42 of the Revised Corporation Code of the Philippines have been complied with;</span>
+    <!-- ITEM 6 KEPT TOGETHER SO CHECKBOXES ARE NOT SPLIT OVER PAGE BREAKS -->
+    <div class="keep-together" style="margin-top: 4px;">
+      <p style="text-align: justify; margin-bottom: 4px;">
+        6. That the requirements of:
+      </p>
+      <div class="checkbox-group" style="margin-left: 20px; margin-bottom: 8px; line-height: 1.8;">
+        <div class="checkbox-item" onclick="toggleBox(this.querySelector('.box-mark'))">
+          <span class="box-mark">${sec37 ? '&#9745;' : '&#9744;'}</span>
+          <span>Section 37 of the Revised Corporation Code of the Philippines have been complied with;</span>
+        </div>
+        <div class="checkbox-item" onclick="toggleBox(this.querySelector('.box-mark'))">
+          <span class="box-mark">${sec38 ? '&#9745;' : '&#9744;'}</span>
+          <span>Section 38 of the Revised Corporation Code of the Philippines have been complied with;</span>
+        </div>
+        <div class="checkbox-item" onclick="toggleBox(this.querySelector('.box-mark'))">
+          <span class="box-mark">${sec42 ? '&#9745;' : '&#9744;'}</span>
+          <span>Section 42 of the Revised Corporation Code of the Philippines have been complied with;</span>
+        </div>
       </div>
     </div>
 
-    <!-- SECTION II: LEFT ALIGNED, SIZE 11 -->
-    <div class="unified-section-title">II. Approval and Details for the Amended Articles of Incorporation</div>
-    
-    <p style="text-indent: 40px; text-align: justify;">
-      1. That the Amended Articles of Incorporation of the said corporation attached hereto is a true and correct copy of the Articles of Incorporation of said Corporation, as amended by stockholders representing at least 2/3 of the outstanding capital stock and by a majority of the Board of Directors on <b>${shMeetingDate}</b>; and
-    </p>
-    <p style="text-indent: 40px; text-align: justify;">
-      2. That the amended provisions refer to <b>${amendedArticle}</b>.
-    </p>
+    <!-- SECTION II KEPT TOGETHER -->
+    <div class="keep-together">
+      <div class="unified-section-title">II. Approval and Details for the Amended Articles of Incorporation</div>
+      <p style="text-indent: 40px; text-align: justify; margin: 4px 0;">
+        1. That the Amended Articles of Incorporation of the said corporation attached hereto is a true and correct copy of the Articles of Incorporation of said Corporation, as amended by stockholders representing at least 2/3 of the outstanding capital stock and by a majority of the Board of Directors on <b>${shMeetingDate}</b>; and
+      </p>
+      <p style="text-indent: 40px; text-align: justify; margin: 4px 0;">
+        2. That the amended provisions refer to <b>${amendedArticle}</b>.
+      </p>
+    </div>
 
-    <!-- SECTION III: LEFT ALIGNED, SIZE 11 -->
-    <div class="unified-section-title">III. No Intra-Corporate Dispute (with Undertaking)</div>
-    
-    <p style="text-indent: 40px; text-align: justify;">
-      To the best of our knowledge, as of the date of execution and notarization of this certificate, no action or proceeding has been filed or is pending before any Court involving an intra-corporate dispute and/or any claim by any person or group against the board of directors, individual director and/or major corporate officer/s of the Corporation as its duly elected and/or appointed director or officer or vice versa.
-    </p>
-    <p style="text-indent: 40px; text-align: justify;">
-      If any action or proceeding referred to in the previous paragraph is initiated after the date of this certificate's execution and notarization and before the release of the Certificate of Approval of increase in capital stock, we shall notify the Department or Office of the Commission where the application is submitted, by providing the softcopy and hardcopy of a duly notarized secretary’s certificate, within three (3) calendar days of receiving notice of filing or pendency of an intra-corporate dispute.
-    </p>
+    <!-- SECTION III KEPT TOGETHER -->
+    <div class="keep-together">
+      <div class="unified-section-title">III. No Intra-Corporate Dispute (with Undertaking)</div>
+      <p style="text-indent: 40px; text-align: justify; margin: 4px 0;">
+        To the best of our knowledge, as of the date of execution and notarization of this certificate, no action or proceeding has been filed or is pending before any Court involving an intra-corporate dispute and/or any claim by any person or group against the board of directors, individual director and/or major corporate officer/s of the Corporation as its duly elected and/or appointed director or officer or vice versa.
+      </p>
+      <p style="text-indent: 40px; text-align: justify; margin: 4px 0;">
+        If any action or proceeding referred to in the previous paragraph is initiated after the date of this certificate's execution and notarization and before the release of the Certificate of Approval of increase in capital stock, we shall notify the Department or Office of the Commission where the application is submitted, by providing the softcopy and hardcopy of a duly notarized secretary’s certificate, within three (3) calendar days of receiving notice of filing or pendency of an intra-corporate dispute.
+      </p>
+    </div>
 
-    <!-- SECTION IV: LEFT ALIGNED, SIZE 11 -->
-    <div class="unified-section-title">IV. Waiver of Preemptive Rights</div>
-    
-    <p style="text-indent: 40px; text-align: justify;">
-      In connection with the aforesaid increase in authorized capital stock, all non-subscribing stockholders have waived their respective preemptive rights in relation to Section 38 of Republic Act. No. 11232, otherwise known as the Revised Corporation Code of the Philippines.
-    </p>
+    <!-- SECTION IV KEPT TOGETHER -->
+    <div class="keep-together">
+      <div class="unified-section-title">IV. Waiver of Preemptive Rights</div>
+      <p style="text-indent: 40px; text-align: justify; margin: 4px 0;">
+        In connection with the aforesaid increase in authorized capital stock, all non-subscribing stockholders have waived their respective preemptive rights in relation to Section 38 of Republic Act. No. 11232, otherwise known as the Revised Corporation Code of the Philippines.
+      </p>
+    </div>
   </div>
 
   <!-- ================= UNIFIED CERTIFICATION: DEDICATED SIGNATURE & JURAT PAGE ================= -->
